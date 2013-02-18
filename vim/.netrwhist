@@ -1,0 +1,8 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_1='/Users/tylerw/.vim/bundle/vim-sensible'
+let g:netrw_dirhist_2='/Users/tylerw/.vim/bundle/vim-sensible/plugin'
+let g:netrw_dirhist_3='/usr/share/zoneinfo/America'
+let g:netrw_dirhist_4='/usr/share/zoneinfo/America/Argentina'
+let g:netrw_dirhist_5='/Users/tylerw/dotfiles/vim/bundle/vim-colors-solarized'
+let g:netrw_dirhist_6='/Users/tylerw/dotfiles/vim/bundle/vim-colors-solarized/colors'
