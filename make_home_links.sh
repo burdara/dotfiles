@@ -6,15 +6,14 @@
 
 ### Variables
 
-dotDir=~/dotfiles                    # dotfiles directory
-bakDir=~/dotfiles.bak # old dotfiles backup directory
-files="bashrc vimrc vim zshrc oh-my-zsh private scrotwm.conf Xresources"    
+dotDir=~/dotfiles        # dotfiles directory
+bakDir=~/dotfiles.bak    # dotfiles backup directory
 # Create list of files/folders to symlink in homedir
 files="$(ls | grep -vE "(README.md|make_home_links.sh)")"
 
 
 ### Main
-set -e              # Exit on any error
+set -e                   # Exit on any error
 
 scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ -d $scriptPath/bashlib ]]; then 
@@ -44,11 +43,11 @@ for file in $files; do
     if [[ -e ~/.$file ]]; then
         echo "Backing up existing dotfile: $homeDir/.$file to $bakDir/.$file.bak.0 ..."
         command="move_and_rotate_backups $homeDir/.$file $bakDir 9"
-	( $command )
+	$command
     fi
     echo "Linking to $file in home directory"
     command="ln -s $dotDir/$file $homeDir/.$file"
-    ( $command )
+    $command
 done
 
 
