@@ -50,4 +50,10 @@ for file in $files; do
     $command
 done
 
+### Extra configuration
+# The vimrc file is located in the vim subdirectory
+ln -s $dotDir/vim/vimrc $homeDir/.vimrc
+
+
+
 
