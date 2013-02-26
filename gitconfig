@@ -13,3 +13,5 @@
 	gll = log     --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
 	lastcommit = log -1 --format=format:%h
 
+[core]
+	excludesfile = /Users/tylerw/.gitignore_global
