@@ -19,9 +19,21 @@ fi
 
 
 ### Aliases
+# ls
 alias ll='ls -l'
 alias l='ls -l'
-alias sshhh='ssh -i /code/mpa/trunk/mpa-tools/ec2/keys/pocadmins.pem'
+# git
+alias ga='git add'
+alias gl='git pull'
+alias gp='git push'
+alias gd='git diff'
+alias gc='git commit'
+alias gca='git commit -a'
+alias gco='git checkout'
+alias gb='git branch'
+alias gs='git status'
+alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
+alias gundo="git reset HEAD"
 
 
 ### Shell Settings
