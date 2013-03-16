@@ -1,11 +1,14 @@
+#!/bin/bash
 ###
 #  Bash Profile
 #
 #  Uses custom functions defined in ~/.bashlib/
 ###
 if [[ $PROFILE_LOADED ]]; then 
-    exit
+    #exit
+    echo hi
 fi
+#exit
 
 printf "Loading Bash Profile..."
 
@@ -49,14 +52,21 @@ set_prompt fancy
 
 
 ### Path
+PATH=/usr/local/bin:$PATH
+PATH=$PATH:/usr/bin
+PATH=$PATH:/bin
+PATH=$PATH:/usr/sbin
+PATH=$PATH:/sbin
+PATH=$PATH:/usr/local/git/bin
 PATH=$PATH:$HOME/.rvm/bin 
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/git/bin:$PATH
-
+export PATH=$PATH
 
 ### Environment Variables
 export GRADLE_OPTS="-Xmx1g"
 export JAVA_HOME=/Library/Java/Home
 export CATALINA_HOME=/Library/Tomcat/Home
+# For SSH
+export SHCN="StrictHostKeyChecking=no"
 
 
 ### Misc

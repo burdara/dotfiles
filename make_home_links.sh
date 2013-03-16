@@ -52,8 +52,8 @@ done
 
 ### Extra configuration
 # The vimrc file is located in the vim subdirectory
-ln -s $dotDir/vim/vimrc $homeDir/.vimrc
-
+#ln -s $dotDir/vim/vimrc $homeDir/.vimrc
+source $dotDir/vim/install.sh
 
 
 
