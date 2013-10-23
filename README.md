@@ -2,16 +2,27 @@ dotfiles
 ========
 
 Personal dotfiles for home directory
-------------------------------------
 
-To install:
-# cd ~
-# git clone https://github.com/tylerwalts/dotfiles.git
-# cd dotfiles
-# ./make_home_links.sh
+Installation:
+=============
 
-This will backup any existing dotfiles to dotfiles.bak and link to all of the contained files as dotfiles in the home directory, except:
+```
+cd ~
+git clone https://github.com/tylerwalts/dotfiles.git
+cd dotfiles
+./install.sh
+```
+
+This will backup any existing dotfiles to dotfiles/backups/ and link to all of the contained files as dotfiles in the home directory, except:
 
 * README.md 
-* make_home_links.sh
+* install.sh
+* backups/
+
+
+Usage:
+======
+
+Open a new shell session
+
 
