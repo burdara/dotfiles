@@ -7,9 +7,10 @@
 ### Variables
 
 dotDir=~/dotfiles        # dotfiles directory
-bakDir=~/dotfiles.bak    # dotfiles backup directory
+bakDir=~/dotfiles/backups    # dotfiles backup directory
+mkdir -p $bakDir
 # Create list of files/folders to symlink in homedir
-files="$(ls | grep -vE "(README.md|make_home_links.sh)")"
+files="$(ls | grep -vE "(README.md|backups|make_home_links.sh)")"
 
 
 ### Main

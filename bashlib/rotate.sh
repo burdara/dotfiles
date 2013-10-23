@@ -44,17 +44,14 @@ function delete_oldest_backup {
 
 function rotate_backups {
     toBak=$maxBackups
-    (( fromBak = $maxBackups - 1 ))
-    while [[ $toBak -gt 0 ]]
-    do
+    (( fromBak=$maxBackups-1 ))
+    for (( toBak=$maxBackups; toBak>=1; toBak-- ));do
         if [[ $toBak -eq $maxBackups ]]; then printf "Rotating backups:  "; fi;
-    
         if [[ -e $backup_target_dir/$backupFilename.bak.$fromBak ]]; then
             printf "$toBak "
             mv $backup_target_dir/$backupFilename.bak.$fromBak $backup_target_dir/$backupFilename.bak.$toBak
         fi
-        (( fromBak-- ))
-        (( toBak-- ))
+        fromBak="$(($fromBak-1 ))"
     done
     printf " Done.\n"
 }
