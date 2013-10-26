@@ -52,9 +52,6 @@ for file in $files; do
 done
 
 ### Extra configuration
-# The vimrc file is located in the vim subdirectory
-#ln -s $dotDir/vim/vimrc $homeDir/.vimrc
-source $dotDir/vim/install.sh
-
-
+echo -e "Installing spf-13 vim distribution..."
+curl https://j.mp/spf13-vim3 -L > spf13-vim.sh && sh spf13-vim.sh
 
