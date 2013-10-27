@@ -1,17 +1,27 @@
 [user]
-	name = Tyler Walters
-	email = github@tylerwalts.com
+    name = Tyler Walters
+    email = git@tylerwalts.com
 
 [alias]
-	ci = commit
-	st = status
-	lc = log ORIG_HEAD.. --stat
-	co = checkout
-	patch = diff --no-ext-diff
-	d = difftool
-	gl  = log -10 --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
-	gll = log     --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
-	lastcommit = log -1 --format=format:%h
+    ci = commit
+    st = status
+    lc = log ORIG_HEAD.. --stat
+    co = checkout
+    patch = diff --no-ext-diff
+    d = difftool
+    gl  = log -10 --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
+    gll = log     --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
+    lastcommit = log -1 --format=format:%h
 
 [core]
-	excludesfile = /Users/tylerw/.gitignore_global
+    excludesfile = ~/.gitignore_global
+[difftool "sourcetree"]
+    cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+    path = 
+[mergetool "sourcetree"]
+    cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+    trustExitCode = true
+[merge]
+    tool = kdiff3
+[help]
+    autocorrect = 1

@@ -8,33 +8,19 @@ if [[ $PROFILE_LOADED ]]; then
     echo "Profile already loaded!"
 fi
 
+[[ -r ~/.bashrc ]] && . ~/.bashrc
+
 printf "Loading Bash Profile..."
 
 ### Include libs
 scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ -d $scriptPath/.bashlib ]]; then
-    source $scriptPath/.bashlib/prompt.sh
+    for i in $(ls $scriptPath/.bashlib/); do
+        source $scriptPath/.bashlib/$i
+    done
 else
     echo -e "\n\n\tError:  missing ~/.bashlib/ dir!!!\n\n";
 fi
-
-
-### Aliases
-# ls
-alias ll='ls -l'
-alias l='ls -l'
-# git
-alias ga='git add'
-alias gl='git pull'
-alias gp='git push'
-alias gd='git diff'
-alias gc='git commit'
-alias gca='git commit -a'
-alias gco='git checkout'
-alias gb='git branch'
-alias gs='git status'
-alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
-alias gundo="git reset HEAD"
 
 
 ### Shell Settings
@@ -47,25 +33,6 @@ export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 # Pass prompt pattern key - see bashlibs/prompt.sh
 # (smiley|redline|fancy)
 set_prompt fancy
-
-
-### Path
-PATH=/usr/local/bin:$PATH
-PATH=$PATH:/usr/bin
-PATH=$PATH:/bin
-PATH=$PATH:/usr/sbin
-PATH=$PATH:/sbin
-PATH=$PATH:/usr/local/git/bin
-PATH=$PATH:$HOME/.rvm/bin
-export PATH=$PATH
-
-### Environment Variables
-export GRADLE_OPTS="-Xmx1g"
-export JAVA_HOME=/Library/Java/Home
-export CATALINA_HOME=/Library/Tomcat/Home
-# For SSH
-export SHCN="StrictHostKeyChecking=no"
-
 
 ### Misc
 # Ruby Version Mmanager
