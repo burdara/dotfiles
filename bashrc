@@ -23,6 +23,7 @@ export SHCN="StrictHostKeyChecking=no"
 alias ll='ls -l'
 alias l='ls -l'
 alias la='ls -la'
+alias lh='ls -lh'
 
 # git
 alias ga='git add'
@@ -36,6 +37,7 @@ alias gb='git branch'
 alias gs='git status'
 alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
 alias gundo="git reset HEAD"
+
 # Disk usage by Folder
 alias duf='du -sk * | sort -n | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G)) {if($s<1024) {printf("%.1f",$s);print "$_\t$f"; last};$s=$s/1024}'\'
 
