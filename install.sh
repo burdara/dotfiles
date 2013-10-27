@@ -55,9 +55,4 @@ done
 echo -e "Installing spf-13 vim distribution..."
 curl https://j.mp/spf13-vim3 -L > spf13-vim.sh && sh spf13-vim.sh
 
-# Customize the spf-13 distro with some local links
-echo -e "Remember to hook in spf-13 customizations
-    ln -s $scriptPath/dotfiles/vimrc.local ~/.spf13-vim-3/.vimrc.local
-    ln -s $scriptPath/dotfiles/vimrc.before ~/.spf13-vim-3/.vimrc.before
-"
 
