@@ -1,0 +1,10 @@
+" Custom Local Options for spf-13
+"   This gets loaded at the end, after spf-13 distro
+
+" Disable mouse integration
+:set mouse-=a
+
+" For making puppet manifests pretty
+map == :Tabularize /=><CR>
+
+
