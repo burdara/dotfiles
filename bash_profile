@@ -25,7 +25,7 @@ export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 
 ### Prompt
 # Pass prompt pattern key - see bashlibs/prompt.sh
-set_prompt fancy # (smiley|redline|fancy)
+set_prompt sexy # (smiley|redline|fancy|sexy)
 
 ### Misc
 # Ruby Version Mmanager
