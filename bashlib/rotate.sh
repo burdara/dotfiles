@@ -22,7 +22,7 @@ function move_and_rotate_backups {
         echo -e "Error:  Backup destination target dir does not exist"; exit 1
     fi
 
-    if [[ "$3" =~ ^[0-9]+$ ]] ; then
+    if [[ "$3" != "" ]] ; then
          maxBackups=$3
     else
         echo -e "Error:  Must pass in # of backups to keep."; exit 1

@@ -26,7 +26,7 @@ fi
 
 echo -e "\nThis will create symlinks from home dir to $dotDir, and backup any existing home dir files to $bakDir:\n\n$files\n"
 read -p "Continue? (y/n) " -n 1 -r
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ "$REPLY" != "y" ]]; then
     echo "Exiting."; exit
 fi
 echo "\n"
