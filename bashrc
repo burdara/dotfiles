@@ -1,42 +1,36 @@
-
+#!/usr/bin/env bash
 ### Path
+[[ -s $HOME/.bash_paths ]] && source $HOME/.bash_paths
+
+# Check for boxen homebrew
+[[ ! -d /usr/local && -d /opt/boxen/homebrew ]] && ln -s /opt/boxen/homebrew /usr/local
+
 PATH=/usr/local/bin:$PATH
-PATH=$PATH:/usr/local/heroku/bin
 PATH=$PATH:/usr/bin
 PATH=$PATH:/bin
 PATH=$PATH:/usr/sbin
 PATH=$PATH:/sbin
 PATH=$PATH:/usr/local/git/bin
-PATH=$PATH:$HOME/.rvm/bin
+PATH=$PATH:$HOME/bin
 export PATH=$PATH
 
 ### Environment Variables
 export GRADLE_OPTS="-Xmx1g"
-export JAVA_HOME=/Library/Java/Home
-export CATALINA_HOME=/Library/Tomcat/Home
+[[ -d /Library/Java/Home ]] && export JAVA_HOME=/Library/Java/Home
+[[ -d /Library/Tomcat ]] && export CATALINA_HOME=/Library/Tomcat
+[[ -d /Library/Tomcat/Home ]] && export CATALINA_HOME=/Library/Tomcat/Home
 
 # For SSH
 export SHCN="StrictHostKeyChecking=no"
 
 ### Aliases
-# ls
-alias ll='ls -l'
-alias l='ls -l'
-alias la='ls -la'
-alias lh='ls -lh'
 
-# git
-alias ga='git add'
-alias gl='git pull'
-alias gp='git push'
-alias gd='git diff'
-alias gc='git commit'
-alias gca='git commit -a'
-alias gco='git checkout'
-alias gb='git branch'
-alias gs='git status'
-alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
-alias gundo="git reset HEAD"
+# ls
+alias l='ls -CF'
+alias ls='ls -hF'
+alias ll='ls -l'
+alias la='ls -A'
+alias lla='ls -lA'
 
 # Disk usage by Folder
 alias duf='du -sk * | sort -n | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G)) {if($s<1024) {printf("%.1f",$s);print "$_\t$f"; last};$s=$s/1024}'\'

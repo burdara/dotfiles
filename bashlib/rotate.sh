@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Move and Rotate Backups
 #    Backup source file or directory

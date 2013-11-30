@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ###
 #  Bash Profile
 #
@@ -7,15 +7,12 @@
 [[ $PROFILE_LOADED ]] && echo "Profile already loaded!"
 printf "Loading Bash Profile..."
 
-[[ -r ~/.bashrc ]] && . ~/.bashrc
+[[ -r $HOME/.bashrc ]] && source $HOME/.bashrc
 
-scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [[ -d $scriptPath/.bashlib ]]; then
-    for i in $(ls $scriptPath/.bashlib/); do
-        source $scriptPath/.bashlib/$i
+if [[ -d $HOME/.bashlib ]]; then
+    for f in $(find $HOME/.bashlib/ -type f -d 1); do
+        source $f
     done
-else
-    echo -e "\n\n\tError:  missing ~/.bashlib/ dir!!!\n\n";
 fi
 
 ### Shell Settings
@@ -28,8 +25,6 @@ export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 set_prompt sexy # (smiley|redline|fancy|sexy)
 
 ### Misc
-# Ruby Version Mmanager
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 export PROFILE_LOADED="yes"
 printf "Done.\n"

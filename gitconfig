@@ -1,31 +1,46 @@
-[user]
-    name = Tyler Walters
-    email = git@tylerwalts.com
-
+[push]
+    default = simple
 [alias]
+    dlc = diff --cached HEAD^
     ci = commit
-    st = status
+    br = branch
+    ss = stash save
+    sl = stash list
+    sa = stash apply
+    st = status -s
+    s = status
     lc = log ORIG_HEAD.. --stat
     co = checkout
     patch = diff --no-ext-diff
     d = difftool
     gl  = log -10 --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
     gll = log     --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+    lds = log --pretty=format:\"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --date=short
+    ls  = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Credset%s%Cblue\\ [%cn]\" --decorate
     lastcommit = log -1 --format=format:%h
-
 [core]
+    excludesfile = /opt/boxen/config/git/gitignore
     excludesfile = ~/.gitignore_global
-
-[difftool "sourcetree"]
+	autocrlf = input
+    editor = gitvim
+[difftool "SourceTree"]
     cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-
-[mergetool "sourcetree"]
+    path = 
+    tool = diffmerge
+[mergetool]
     cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
     trustExitCode = true
-
+    keepBackup = false
+    diffmerge = true
 [merge]
-    tool = kdiff3
-
+    defaultToUpstream = true
+    tool = diffmerge
 [help]
     autocorrect = 1
-
+[credential]
+    helper = /opt/boxen/bin/boxen-git-credential
+[hub]
+    protocol = https
+[color]
+    ui = true
