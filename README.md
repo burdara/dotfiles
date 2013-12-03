@@ -8,7 +8,7 @@ Installation:
 
 ```
 cd ~
-git clone https://github.com/burdara/dotfiles.git
+* git clone https://github.com/username/Project.git
 cd dotfiles
 ./install.sh
 ```
