@@ -11,7 +11,7 @@ bakDir=$HOME/dotfiles/backups  # dotfiles backup directory
 scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Create list of files/folders to symlink in homedir
-files="$(ls | grep -vE '(README.md|backups|install.sh|spf13-vim.sh|gitconfig)')"
+files="$(ls | grep -vE '(README.md|backups|install.sh|spf13-vim.sh|gitconfig|gitignore_global)')"
 
 ### Functions
 confirmBackup() {
@@ -67,11 +67,20 @@ installSpf13Vim() {
     curl https://j.mp/spf13-vim3 -L > spf13-vim.sh && sh spf13-vim.sh
     touch spf13-vim.lock
 }
-setupGitUserConfig() {
+setupGitConfig() {
     read -r -p "Enter Git user.name: " user_name
     read -r -p "Enter Git user.email: " user_email
     git config --global user.name "$user_name"
     git config --global user.email "$user_email"
+}
+setupGitIgnore() {
+    if [[ -e /opt/boxen/bin/boxen-git-credential ]]; then
+        git config --global credential.helper "/opt/boxen/bin/boxen-git-credential"
+    fi
+    if [[ -e /opt/boxen/config/git/gitignore ]]; then
+        echo "Boxen gitignore" >> ~/.gitignore_global
+        cat /opt/boxen/config/git/gitignore >> ~/.gitignore_global
+    fi
 }
 
 ### Main
@@ -93,7 +102,12 @@ done
 # Git Config
 backupExistingDotfile gitconfig
 createCopy gitconfig
-setupGitUserConfig
+setupGitConfig
+
+# Git Ignore
+backupExistingDotfile gitignore_global
+createCopy gitignore_global
+setupGitIgnore
 
 # Personal file
 createMyBashlibFile

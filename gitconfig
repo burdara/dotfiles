@@ -20,7 +20,6 @@
     ls  = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Credset%s%Cblue\\ [%cn]\" --decorate
     lastcommit = log -1 --format=format:%h
 [core]
-    excludesfile = /opt/boxen/config/git/gitignore
     excludesfile = ~/.gitignore_global
 	autocrlf = input
     editor = gitvim
@@ -38,8 +37,6 @@
     tool = diffmerge
 [help]
     autocorrect = 1
-[credential]
-    helper = /opt/boxen/bin/boxen-git-credential
 [hub]
     protocol = https
 [color]
