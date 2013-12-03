@@ -39,6 +39,7 @@ createSymbolicLink() {
     fi
 }
 createCopy() {
+    [[ -L $HOME/.$1 ]] && rm $HOME/.$1
     if [[ ! -e $HOME/.$1 ]]; then
         echo "Copying $1 to home directory"
         cp $dotDir/$1 $HOME/.$1
@@ -78,7 +79,7 @@ setupGitIgnore() {
         git config --global credential.helper "/opt/boxen/bin/boxen-git-credential"
     fi
     if [[ -e /opt/boxen/config/git/gitignore ]]; then
-        echo "Boxen gitignore" >> ~/.gitignore_global
+        echo "### Boxen gitignore" >> ~/.gitignore_global
         cat /opt/boxen/config/git/gitignore >> ~/.gitignore_global
     fi
 }
