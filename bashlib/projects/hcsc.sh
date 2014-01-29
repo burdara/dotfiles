@@ -18,6 +18,9 @@ ssh_ci() {
 ssh_dev() {
   ssh_bamboo ubuntu dev.hcsc.slalomcloud.com
 }
+ssh_nexus() {
+  ssh_bamboo ubuntu mavenrepo-hcsc.slalomcloud.com
+}
 
 set_mvn_version() {
   [[ $# -ne 1 || -z $1 ]] && echo "missing or invalid arguments" && return 1
