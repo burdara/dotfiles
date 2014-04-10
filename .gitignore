@@ -2,3 +2,5 @@ backups
 spf13-vim.sh
 spf13-vim.lock
 bashlib/my_bashlib.sh
+bashlib/projects/*
+bashlib/people/*
