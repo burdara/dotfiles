@@ -46,6 +46,9 @@ createCopy() {
     fi
 }
 createMyBashlibFile() {
+    for dir in projects people; do
+        [[ ! -d $HOME/.bashlib/$dir ]] && mkdir -p $HOME/.bashlib/$dir
+    done
     my_bashlib=$scriptPath/bashlib/my_bashlib.sh
     my_file=$HOME/.bashlib/people/$myself.sh
     if [[ ! -e $my_file ]]; then  
