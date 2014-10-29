@@ -63,4 +63,3 @@ function move_backup_source {
     command="mv $backup_source $backup_target_dir/$backupFilename.bak.0"
     ( $command )
 }
-

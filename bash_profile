@@ -10,7 +10,7 @@ printf "Loading Bash Profile..."
 [[ -r $HOME/.bashrc ]] && source $HOME/.bashrc
 
 if [[ -d $HOME/.bashlib ]]; then
-    for f in $(find $HOME/.bashlib/ -type f -d 1); do
+    for f in $(find $HOME/.bashlib/ -type f -d 1 \( ! -iname ".*" \)); do
         source $f
     done
 fi

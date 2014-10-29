@@ -3,7 +3,7 @@
 [[ -s $HOME/.bash_paths ]] && source $HOME/.bash_paths
 
 # Check for boxen homebrew
-[[ ! -d /usr/local && -d /opt/boxen/homebrew ]] && ln -s /opt/boxen/homebrew /usr/local
+#[[ ! -d /usr/local_old && -d /opt/boxen/homebrew ]] && ln -s /opt/boxen/homebrew /usr/local_old
 
 PATH=/usr/local/bin:$PATH
 PATH=$PATH:/usr/bin
@@ -34,4 +34,3 @@ alias lla='ls -lA'
 
 # Disk usage by Folder
 alias duf='du -sk * | sort -n | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G)) {if($s<1024) {printf("%.1f",$s);print "$_\t$f"; last};$s=$s/1024}'\'
-

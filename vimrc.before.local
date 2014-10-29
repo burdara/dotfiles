@@ -5,6 +5,3 @@
 
 " Gives the special symbols in the line below
 let g:airline_powerline_fonts = "1"
-
-
-

@@ -9,4 +9,7 @@ set wrap
 " For making puppet manifests pretty
 map == :Tabularize /=><CR>
 
-
+if $VIM_CRONTAB == "true"
+set nobackup
+set nowritebackup
+endif

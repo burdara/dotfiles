@@ -28,7 +28,7 @@ find_source_bash_competion() {
     cmd_script=$(which $1)
     [[ -z $cmd_script ]] && return 1
     cmd_script_dir=$(dirname $cmd_script)
-    if [[ -L $cmd_script ]]; then 
+    if [[ -L $cmd_script ]]; then
         cmd_script=$(readlink $cmd_script)
         tmp_script_dir=$(dirname $cmd_script)
         c=$(echo $tmp_script_dir | cut -c1)
@@ -69,4 +69,3 @@ git_remove_submodule() {
         exit 1
    fi
 }
-

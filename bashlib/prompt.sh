@@ -145,4 +145,3 @@ function set_prompt {
     fi
     $patternFunction
 }
-
