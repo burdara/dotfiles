@@ -1,147 +1,81 @@
 #!/usr/bin/env bash
-########################################################
+#
 # Set the bash prompt
-#
-#  Syntax for style(X) & color(YY): \[e[X;YYm\]
-#
-#    Style(X) can be:
-#      0   :  Plain
-#      1   :  Bold
-#
-#    Color(YY) can be:
-#      31  :  Red
-#      32  :  Green
-#      33  :  Yellow
-#      34  :  Dark Blue
-#      35  :  Purple
-#      36  :  Light blue
-#      37  :  White
-#
-#    Plain/Reset: \[\e[0m\]
-#
 
+define_colors() {
+  [[ "$COLORTERM" == "gnome-*" && "$TERM" == "xterm" ]] \
+    && infocmp "gnome-256color" &>/dev/null \
+    && export TERM="gnome-256color"
+  infocmp "xterm-256color" &>/dev/null \
+    && export TERM="xterm-256color"
 
-### Helpers
-#  This is to reuse the smiley return code indicator in any of the patterns below
-smileyCommand="if [ \$? = 0 ]; then echo -e '\e[01;32m:)'; else echo -e '\e[01;31m:('; fi"
+  local color_support="$(tput colors 2>/dev/null)"
+  [[ -z "$color_support" ]] && return 0
 
-# This will display in the terminal title bar, but not in prompt
-titleBar="\[\033]0;\u@\h:\w\007\]"
+  # defaults 8 colors
+  [[ -z "$_BLACK" ]] && export _BLACK=$(tput setaf 0 || echo "\e[30m")
+  [[ -z "$_RED" ]] && export _RED=$(tput setaf 1 || echo "\e[31m")
+  [[ -z "$_GREEN" ]] && export _GREEN=$(tput setaf 2 || echo "\e[32m")
+  [[ -z "$_YELLOW" ]] && export _YELLOW=$(tput setaf 3 || echo "\e[33m")
+  [[ -z "$_BLUE" ]] && export _BLUE=$(tput setaf 4 || echo "\e[34m")
+  [[ -z "$_MAGENTA" ]] && export _MAGENTA=$(tput setaf 5 || echo "\e[35m")
+  [[ -z "$_CYAN" ]] && export _CYAN=$(tput setaf 6 || echo "\e[36m")
+  [[ -z "$_WHITE" ]] && export _WHITE=$(tput setaf 7 || echo "\e[97m")
 
-
-###
-# Fancy Prompt
-#
-# This prompt pattern looks like:
-#
-# ┌─[ user @ host ]-[ /path/to/stuff ]─[ 04:59:59 ]
-# └─[ $ ]›
-#
-function prompt_fancy {
-    # Define colors to prompt components
-    local cPlain="\[\e[0m\]"
-    local cLines="\[\e[0;36m\]"
-    local cAtSign="\[\e[1;36m\]"
-    local cUser="\[\e[1;33m\]"
-    local cHost="\[\e[1;33m\]"
-    local cPath="\[\e[1;34m\]"
-    local cTime="\[\e[0;31m\]"
-    local cPrompt="\[\e[1;37m\]"
-
-    export PS1="\n\
-${cLines}┌─[ ${cUser}\u${cAtSign} @ ${cHost}\h${cLines} ]-[ ${cPath}\w${cLines} ]─[ ${cTime}\t${cLines} ]\n\
-${cLines}└─[ \`$smileyCommand\` ${cLines}]› ${titleBar}\[\e[0m\]"
+  # effects
+  [[ -z "$_RESET" ]] && export _RESET=$(tput sgr0 || echo "\e[0m")
+  [[ -z "$_BOLD" ]] && export _BOLD=$(tput bold || echo "\e[1m")
+  [[ -z "$_START_UL" ]] && export _START_UL=$(tput smul || echo "\e[4m")
+  [[ -z "$_END_UL" ]] && export _END_UL=$(tput rmul || echo "\e[24m")
+  [[ -z "$_REV_VID" ]] && export _REV=$(tput rev || echo "\e[7m")
+  [[ -z "$_START_BLINK" ]] && export _BLINK=$(tput blink || echo "\e[5m")
+  [[ -z "$_INVIS" ]] && export _INVIS=$(tput invis || echo "\e[8m")
+  [[ -z "$_START_STANDOUT" ]] && export _START_STANDOUT=$(tput smso || echo "\e[1m")
+  [[ -z "$_END_STANDOUT" ]] && export _END_STANDOUT=$(tput rmso || echo "\e[21m")
 }
 
-###
-# Red Line Prompt
-#
-# This prompt pattern looks like (where line takes up 100% screen width)
-#
-# ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-# )
-#
-function prompt_redline {
-    export PS1="\e]2;\$(pwd)\a\e]1;\$(pwd)\a\e[31;1m\$(s=\$(printf "%*s" \$COLUMNS); echo \${s// /―})\n)\e[0m ";
+_git_branch() {
+  ! which git &>/dev/null && return 0
+  local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  [[ -z "$branch" ]] && return 0
+  [[ "$branch" == "HEAD" ]] && local branch="detached*"
+  echo "$branch"
 }
 
-###
-# Smiley Prompt
-#
-# Color-coded Smiley pattern depends on exit status of previous command:
-#   After success:  :)
-#   After fail:     :(
-#
-function prompt_smiley {
-    export PS1="\[\e[01;32m\]\u@\h \[\e[01;34m\]\W \`$smileyCommand\` \[\e[01;34m\]$\[\e[00m\] "
+_git_dirty() {
+  which git &>/dev/null && return 0
+  [[ -n "$(git status --porcelain 2>/dev/null)" ]] && echo "*"
 }
 
-function parse_git_dirty() {
-    [[ $(git status 2> /dev/null | tail -n1) != *"working directory clean"* ]] && echo "*"
-}
-function parse_git_branch() {
-    git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
-}
+prompt_dev() {
+  # PS1
+  local ps1=""
+  [[ -n "$CURRENT_PROFILE_ENV" ]] \
+    && local ps1+="\[$_BOLD$_YELLOW\]\$(_profile_env)\[$_RESET\] "
+  local ps1+="\[$_BOLD$_CYAN\]\u\[$_RESET$_WHITE\]@\[$_BOLD$_MAGENTA\]\h\[$_RESET\] "
+  local ps1+="\[$_BOLD$_GREEN\]\w\[$_RESET\] "
+  local ps1+="\[$_BOLD$_BLUE\]\$(_git_branch)\$(_git_dirty)\[$_WHITE\] \t\n\$\[$_RESET\] "
+  export PS1="$ps1"
 
-function prompt_sexy {
-    # @gf3’s Sexy Bash Prompt, inspired by “Extravagant Zsh Prompt”
-    # Shamelessly copied from https://github.com/gf3/dotfiles
-    # Screenshot: http://i.imgur.com/s0Blh.png
-    if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
-        export TERM=gnome-256color
-    elif infocmp xterm-256color >/dev/null 2>&1; then
-        export TERM=xterm-256color
-    fi
+  # PS2
+  export PS2="\[$_RED\]→\[$_RESET\] "
 
-    if tput setaf 1 &> /dev/null; then
-        tput sgr0
-        if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
-            MAGENTA=$(tput setaf 9)
-            ORANGE=$(tput setaf 172)
-            GREEN=$(tput setaf 190)
-            PURPLE=$(tput setaf 141)
-            WHITE=$(tput setaf 0)
-        else
-            MAGENTA=$(tput setaf 5)
-            ORANGE=$(tput setaf 4)
-            GREEN=$(tput setaf 2)
-            PURPLE=$(tput setaf 1)
-            WHITE=$(tput setaf 7)
-        fi
-        BOLD=$(tput bold)
-        RESET=$(tput sgr0)
-    else
-        MAGENTA="\033[1;31m"
-        ORANGE="\033[1;33m"
-        GREEN="\033[1;32m"
-        PURPLE="\033[1;35m"
-        WHITE="\033[1;37m"
-        BOLD=""
-        RESET="\033[m"
-    fi
-    export MAGENTA
-    export ORANGE
-    export GREEN
-    export PURPLE
-    export WHITE
-    export BOLD
-    export RESET
-    export PS1="\[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$PURPLE\]\$(parse_git_branch)\[$WHITE\] \t\n\$ \[$RESET\]"
-    export PS2="\[$ORANGE\]→ \[$RESET\]"
-
+  # PS3 - unchanged
+  # PS4 - unchanged
 }
 
-
-
-###
+#######################################
 # Set Prompt
-#  Use this to pass in the key of which prompt to use
+# Globals:
+#   None
+# Arguments:
+#   $1  prompt_name
+# Returns:
+#   None
+#######################################
 function set_prompt {
-    default="fancy"
-    if [[ $1 ]]; then
-        patternFunction="prompt_$1"
-    else
-        patternFunction="prompt_$default"
-    fi
-    $patternFunction
+  local pattern_function="prompt_${1:-dev}"
+  $pattern_function
 }
+
+define_colors

@@ -1,28 +1,18 @@
-dotfiles
-========
-
+# dotfiles
 Personal dotfiles for home directory
 
-Installation:
-=============
-
+## Installation:
 ```
 cd ~
-* git clone https://github.com/username/Project.git
+git clone https://github.com/robbieb/dotfiles.git
 cd dotfiles
 ./install.sh
 ```
 
 This will backup any existing dotfiles to dotfiles/backups/ and link to all of the contained files as dotfiles in the home directory, except:
-
-* README.md 
+* README.md
 * install.sh
 * backups/
 
-
-Usage:
-======
-
+## Usage:
 Open a new shell session
-
-

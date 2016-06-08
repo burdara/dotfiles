@@ -1,30 +1,25 @@
 #!/usr/bin/env bash
-###
-#  Bash Profile
 #
-#  Uses custom functions defined in ~/.bashlib/
-###
-[[ $PROFILE_LOADED ]] && echo "Profile already loaded!"
-printf "Loading Bash Profile..."
+#  Bash Profile
 
-[[ -r $HOME/.bashrc ]] && source $HOME/.bashrc
+printf "Loading dot files..."
+bashrc_file="$HOME/.bashrc"
+bashlib_dir="$HOME/.bashlib"
 
-if [[ -d $HOME/.bashlib ]]; then
-    for f in $(find $HOME/.bashlib/ -type f -d 1 \( ! -iname ".*" \)); do
-        source $f
-    done
+# Source bashlib file (first level)
+[[ -r "$bashrc_file" ]] && source "$bashrc_file"
+if [[ -d "$HOME/.bashlib" ]]; then
+  for f in $(find $HOME/.bashlib/ -type f -maxdepth 1 \( ! -iname ".*" \)); do
+    source $f
+  done
 fi
 
-### Shell Settings
+# Shell Settings
 set -o vi                                # Set vi mode for bash shell
 export CLICOLOR=1                        # Turn on colors
 export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 
-### Prompt
-# Pass prompt pattern key - see bashlibs/prompt.sh
-set_prompt sexy # (smiley|redline|fancy|sexy)
+# Prompt - Pass prompt pattern key - see bashlibs/prompt.sh
+set_prompt dev
 
-### Misc
-
-export PROFILE_LOADED="yes"
 printf "Done.\n"

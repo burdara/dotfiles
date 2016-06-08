@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-### Path
-PATH=$PATH:/usr/local/git/bin
+# Paths
+git_paths=(
+  "/usr/local/git/bin"
+)
+add_paths ${git_paths[@]}
 
-### Aliases
+# Aliases
 alias ga='git add'
 alias gl='git pull'
 alias gp='git push'
@@ -16,56 +19,92 @@ alias gs='git status'
 alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
 alias gundo="git reset HEAD"
 
-### bare vim
-[[ -d $HOME/bin ]] && mkdir -p $HOME/bin
-git_vim=$HOME/bin/gitvim
-echo "vim -u 'NONE' \$@" > $git_vim
-chmod +x $git_vim
-
-### Bash Completion
-find_source_bash_competion() {
-    [[ -z $1 ]] && return 1
-    cmd_script=$(which $1)
-    [[ -z $cmd_script ]] && return 1
-    cmd_script_dir=$(dirname $cmd_script)
-    if [[ -L $cmd_script ]]; then
-        cmd_script=$(readlink $cmd_script)
-        tmp_script_dir=$(dirname $cmd_script)
-        c=$(echo $tmp_script_dir | cut -c1)
-        [[ $c = "." || $fc != "/" ]] && cmd_script_dir=$cmd_script_dir/$tmp_script_dir
-    fi
-    cmd_bc_dir=$cmd_script_dir/../etc/bash_completion.d
-    if [[ -d $cmd_bc_dir ]]; then
-        for bc in $(find $cmd_bc_dir -type f); do source $bc; done
-    fi
+#######################################
+# Creates gitvim script
+# spf13-vim components can cause issues with git commit messages
+# Globals:
+#   None
+# Arguments:
+#   $1  source_file_url
+# Returns:
+#   None
+#######################################
+create_bare_vim() {
+  home_bin_dir="$HOME/bin"
+  [[ -d "$home_bin_dir" ]] && mkdir -p "$home_bin_dir"
+  git_vim_file="$home_bin_dir/gitvim"
+  [[ -x "$git_vim_file" ]] && return 0
+  printf "vim -u 'NONE' \$@" > $git_vim_file
+  chmod +x $git_vim_file
 }
-find_source_bash_competion git
-find_source_bash_competion git-flow
 
-### Functions
-
-# Remove Submodule
-#
-# Usage: `git_remove_submodule path/to/submodule`
-#
-# Does the inverse of `git submodule add`:
-#  1) `deinit` the submodule
-#  2) Remove the submodule from the index and working directory
-#  3) Clean up the .gitmodules file (won't be needed with 1.8.5!)
-# Based on example by Adam Sharp, Aug 21, 2013
-git_remove_submodule() {
-    submodule_name=$(echo "$1" | sed 's/\/$//'); shift
-    if git submodule status "$submodule_name" >/dev/null 2>&1; then
-        git submodule deinit -f "$submodule_name"
-        git rm -rf "$submodule_name"
-        git config -f .gitmodules --remove-section "submodule.$submodule_name"
-        if [ -z "$(cat .gitmodules)" ]; then
-            git rm -f .gitmodules
-        else
-            git add .gitmodules
-        fi
-    else
-        echo "Submodule '$submodule_name' not found"
-        exit 1
-   fi
+#######################################
+# Download and source file
+# Globals:
+#   None
+# Arguments:
+#   $1  source_file_url
+# Returns:
+#   None
+#######################################
+download_bash_source_file() {
+  [[ -z "$1" ]] && printf "url arg missing." && return 1
+  local url="$1"
+  local filename="$HOME/${bash_complete_file_url##*/}"
+  [[ ! -e "$filename" ]] && curl -s -o "$filename" "$url"
+  [[ -s "$filename" ]] && source "$filename"
 }
+
+#######################################
+# Setup gitconfig file
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+#######################################
+setup_git_config() {
+  gitconfig_file="$HOME/.gitconfig"
+  gitconfig_lock_file="$HOME/.gitconfig.lock"
+  [[ -e "$gitconfig_lock_file" ]] && return 0
+
+  git config --global core.editor = gitvim
+
+  local v="$(git config --global user.name)"
+  read -r -p "Enter Git user.name: [$v] " user_input
+  git config --global user.name "${user_input:-$v}"
+
+  local v="$(git config --global user.email)"
+  read -r -p "Enter Git user.email: [$v] " user_input
+  git config --global user.email "${user_input:-$v}"
+
+  git mergetool --tool-help && printf "Custom options:"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stree_diff_file="/Applications/SourceTree.app/Contents/Resources/opendiff-w.sh"
+    [[ -x "$stree_diff_file" ]] && printf "\t\t SourceTree"
+  fi
+
+  local v="$(git config --global diff.tool)"
+  read -r -p "Enter Git diff.tool: [$v] " user_input
+  git config --global diff.tool "${user_input:-$v}"
+  if [[ "${user_input:-$v}" == "SourceTree" ]]; then
+    git config --global difftool.SourceTree.cmd \
+      "$stree_diff_file \"$LOCAL\" \"$REMOTE\""
+  fi
+
+  local v="$(git config --global merge.tool)"
+  read -r -p "Enter Git merge.tool: [$v] " user_input
+  git config --global merge.tool "${user_input:-$v}"
+  if [[ "${user_input:-$v}" == "SourceTree" ]]; then
+    git config --global mergetool.SourceTree.cmd \
+      "$stree_diff_file \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\""
+    git config --global mergetool.SourceTree.trustExitCode = true
+    git config --global mergetool.SourceTree.keepBackup = false
+  fi
+}
+
+create_bare_vim
+setup_git_config
+download_bash_source_file "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+download_bash_source_file "https://raw.githubusercontent.com/bobthecow/git-flow-completion/master/git-flow-completion.bash"

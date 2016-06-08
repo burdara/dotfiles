@@ -1,7 +1,7 @@
-# Global gitignore for every project
-# If not in .gitconfig, run:  git config --global core.excludesfile ~/.gitignore_global
+# Global gitignore
+# If not in .gitconfig, execute 'git config --global core.excludesfile ~/.gitignore_global'
 
-### Compiled artifacts 
+### Compiled artifacts
 *.com
 *.class
 *.dll
@@ -9,7 +9,7 @@
 *.o
 *.so
 
-### Archives 
+### Archives
 *.7z
 *.dmg
 *.gz
@@ -18,7 +18,7 @@
 *.tar
 *.zip
 
-### Logs 
+### Logs
 *.log
 
 ### OS files
@@ -37,5 +37,3 @@ Thumbs.db
 
 ### Microsoft
 ~$*
-
-
