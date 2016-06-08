@@ -7,12 +7,13 @@ myself=$(whoami)
 dot_dir="$HOME/dotfiles"
 backup_dir="$HOME/dotfiles/backups"
 script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+max_backups=9
 
 # Create list of files/folders to symlink in homedir
 files="$(ls | grep -vE '(README.md|backups|install.sh|spf13-vim.sh|gitconfig|gitignore_global)')"
 
 confirm_backup() {
-  echo -e "\nThis will create symlinks from home dir to $dot_dir, and backup any existing home dir files to $backup_dir:\n\n$files\n"
+  echo -e "\nThis will create symlinks from $dot_dir to $HOME, and backup any existing home dir files to $backup_dir:\n\n$files\n"
   read -p "Continue? (y/n) " -n 1 -r
   [[ "$REPLY" != "y" ]] && echo "Exiting." && exit 0
   echo "Let's do this!"
@@ -24,7 +25,7 @@ create_backup_dir() {
     && mkdir -p $backup_dir
 }
 
-function move_and_rotate_backup {
+move_and_rotate_backup() {
     [[ -z "$1" ]] && echo -e "Error: backup_source arg not specified. " \
       && local rc=1
     [[ -z "$2" ]] && echo -e "Error: backup_target_dir arg not specified. " \
@@ -66,7 +67,7 @@ backup_existing_dotfile() {
   [[ -z "$1" ]] && echo -e "Error: dotfile arg not specified. " && return 1
   [[ -e $HOME/.$1 && ! -L $HOME/.$1 ]] \
     && echo "Backing up existing dotfile: $HOME/.$1 to $backup_dir/.$1.bak.0 ..." \
-    && move_and_rotate_backup $HOME/.$1 $backup_dir 9
+    && move_and_rotate_backup "$HOME/.$1" "$backup_dir" "$max_backups"
 }
 
 create_symbolic_link() {
@@ -106,15 +107,6 @@ install_spf13_vim() {
   touch spf13-vim.lock
 }
 
-setup_git_config() {
-  read -r -p "Enter Git user.name: " user_name
-  read -r -p "Enter Git user.email: " user_email
-  git config --global user.name "$user_name"
-  git config --global user.email "$user_email"
-}
-
-setup_gitignore() { : }
-
 ### Main
 set -e # Exit on any error
 [[ ! -d "$script_path/bashlib" ]] && echo "Error: missing bashlib directory" && exit 1
@@ -134,12 +126,10 @@ done
 # Git Config
 backup_existing_dotfile "gitconfig"
 create_copy "gitconfig"
-setup_git_config
 
 # Git Ignore
 backup_existing_dotfile "gitignore_global"
 create_copy "gitignore_global"
-setup_gitignore
 
 # Personal file
 create_my_bashlib_file

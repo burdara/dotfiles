@@ -50,8 +50,8 @@ _git_dirty() {
 prompt_dev() {
   # PS1
   local ps1=""
-  [[ -n "$CURRENT_PROFILE_ENV" ]] \
-    && local ps1+="\[$_BOLD$_YELLOW\]\$(_profile_env)\[$_RESET\] "
+  [[ -n "$CURRENT_ENVLIB" ]] \
+    && local ps1+="\[$_BOLD$_YELLOW\][\$CURRENT_ENVLIB]\[$_RESET\] "
   local ps1+="\[$_BOLD$_CYAN\]\u\[$_RESET$_WHITE\]@\[$_BOLD$_MAGENTA\]\h\[$_RESET\] "
   local ps1+="\[$_BOLD$_GREEN\]\w\[$_RESET\] "
   local ps1+="\[$_BOLD$_BLUE\]\$(_git_branch)\$(_git_dirty)\[$_WHITE\] \t\n\$\[$_RESET\] "
