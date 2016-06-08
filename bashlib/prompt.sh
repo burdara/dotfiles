@@ -39,12 +39,13 @@ _git_branch() {
   local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
   [[ -z "$branch" ]] && return 0
   [[ "$branch" == "HEAD" ]] && local branch="detached*"
-  echo "$branch"
+  echo "$_BOLD$_YELLOW$branch$_RESET"
 }
 
 _git_dirty() {
-  which git &>/dev/null && return 0
-  [[ -n "$(git status --porcelain 2>/dev/null)" ]] && echo "*"
+  ! which git &>/dev/null && return 0
+  [[ -n "$(git status --porcelain 2>/dev/null)" ]] \
+    && echo "$_BOLD$_RED$_BLINK*$_RESET"
 }
 
 prompt_dev() {
@@ -52,9 +53,10 @@ prompt_dev() {
   local ps1=""
   [[ -n "$CURRENT_ENVLIB" ]] \
     && local ps1+="\[$_BOLD$_YELLOW\][\$CURRENT_ENVLIB]\[$_RESET\] "
-  local ps1+="\[$_BOLD$_CYAN\]\u\[$_RESET$_WHITE\]@\[$_BOLD$_MAGENTA\]\h\[$_RESET\] "
-  local ps1+="\[$_BOLD$_GREEN\]\w\[$_RESET\] "
-  local ps1+="\[$_BOLD$_BLUE\]\$(_git_branch)\$(_git_dirty)\[$_WHITE\] \t\n\$\[$_RESET\] "
+  local ps1+="\[$_BOLD$_CYAN\]\u \[$_BOLD$_BLUE\]@ \[$_BOLD$_MAGENTA\]\h\[$_RESET\] "
+  local ps1+="\[$_BOLD$_BLUE\]: \[$_BOLD$_GREEN\]\w\[$_RESET\] "
+  local ps1+="\$(_git_dirty)\$(_git_branch)\$(_git_dirty) "
+  local ps1+="\[$_BOLD$_WHITE\]\t\n\$ \[$_RESET\]"
   export PS1="$ps1"
 
   # PS2

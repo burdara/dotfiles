@@ -50,9 +50,9 @@ check_aws_config() {
 #   None
 #######################################
 print_aws_commands() {
-  printf "set +o history"
+  printf "set +o history\n"
   env | grep "AWS_" | sed "s/^/export /g"
-  printf "set -o history"
+  printf "set -o history\n"
 }
 
 #######################################
@@ -69,8 +69,8 @@ print_aws_commands() {
 awsenv() {
   [[ "$1" == "-c" ]] && local printc=1 && shift
   if [[ -z "$1" ]]; then
-    printf "aws_profile: ${AWS_DEFAULT_PROFILE:-none}"
-    printf "aws_region: $AWS_REGION"
+    printf "aws_profile: ${AWS_DEFAULT_PROFILE:-none}\n"
+    printf "aws_region: $AWS_REGION\n"
     [[ "$printc" -eq 1 ]] && print_aws_commands
     return 0
   fi

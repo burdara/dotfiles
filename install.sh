@@ -21,7 +21,7 @@ confirm_backup() {
 
 create_backup_dir() {
   [[ ! -d $backup_dir ]] \
-    && echo -e "Creating $backup_dir for backup of any existing dotfiles in home"
+    && echo -e "Creating $backup_dir for backup of any existing dotfiles in home" \
     && mkdir -p $backup_dir
 }
 
@@ -111,7 +111,6 @@ install_spf13_vim() {
 set -e # Exit on any error
 [[ ! -d "$script_path/bashlib" ]] && echo "Error: missing bashlib directory" && exit 1
 
-source "$script_path/bashlib/rotate.sh"
 confirm_backup
 create_backup_dir
 

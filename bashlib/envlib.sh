@@ -13,7 +13,7 @@ template_file="$lib_dir/envlib/.template.sh"
 #######################################
 envlib() {
   local usage="usage: envlib init name\n envlib destroy\n"
-  [[ -z "$1" ]] && printf "active: $CURRENT_ENVLIB" && return 0
+  [[ -z "$1" ]] && printf "active: $CURRENT_ENVLIB\n" && return 0
   case "$1" in
     init)
       [[ -z "$2" ]] && printf "$usage" && return 1
@@ -30,7 +30,7 @@ envlib() {
         && envlib_teardown_$CURRENT_ENVLIB \
         && unset CURRENT_ENVLIB
       [[ ! -e "$envlib_file" ]] \
-        && printf "creating new envlib file from template: $envlib_file"
+        && printf "creating new envlib file from template: $envlib_file\n" \
         && sed -e 's/{NAME}/'$2'/g' "$template_file" > "$envlib_file"
       [[ -e "$envlib_file" ]] \
         && source "$envlib_init" && envlib_init_$2

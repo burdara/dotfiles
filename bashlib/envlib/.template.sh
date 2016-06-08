@@ -12,7 +12,7 @@ my_name="{NAME}"
 #   None
 ########################################
 envlib_init_{NAME}() {
-  printf "Initilizing '$my_name'"
+  printf "Initilizing '$my_name'\n"
   #TODO
 }
 
@@ -26,7 +26,7 @@ envlib_init_{NAME}() {
 #   None
 ########################################
 envlib_teardown_{NAME}() {
-  printf "Tearing down '$my_name'"
+  printf "Tearing down '$my_name'\n"
   # TODO
 
   # remove functions

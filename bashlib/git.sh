@@ -48,9 +48,9 @@ create_bare_vim() {
 #   None
 #######################################
 download_bash_source_file() {
-  [[ -z "$1" ]] && printf "url arg missing." && return 1
+  [[ -z "$1" ]] && printf "missing url arg\n" && return 1
   local url="$1"
-  local filename="$HOME/${bash_complete_file_url##*/}"
+  local filename="$HOME/${url##*/}"
   [[ ! -e "$filename" ]] && curl -s -o "$filename" "$url"
   [[ -s "$filename" ]] && source "$filename"
 }
@@ -79,10 +79,10 @@ setup_git_config() {
   read -r -p "Enter Git user.email: [$v] " user_input
   git config --global user.email "${user_input:-$v}"
 
-  git mergetool --tool-help && printf "Custom options:"
+  git mergetool --tool-help && printf "Custom options:\n"
   if [[ "$(uname)" == "Darwin" ]]; then
     stree_diff_file="/Applications/SourceTree.app/Contents/Resources/opendiff-w.sh"
-    [[ -x "$stree_diff_file" ]] && printf "\t\t SourceTree"
+    [[ -x "$stree_diff_file" ]] && printf "\t\t SourceTree\n"
   fi
 
   local v="$(git config --global diff.tool)"
@@ -102,6 +102,8 @@ setup_git_config() {
     git config --global mergetool.SourceTree.trustExitCode = true
     git config --global mergetool.SourceTree.keepBackup = false
   fi
+
+  touch "$gitconfig_lock_file"
 }
 
 create_bare_vim

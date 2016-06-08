@@ -2,7 +2,7 @@
 #
 #  Bash Profile
 
-printf "Loading dot files..."
+printf "Loading dot files...\n"
 bashrc_file="$HOME/.bashrc"
 bashlib_dir="$HOME/.bashlib"
 
