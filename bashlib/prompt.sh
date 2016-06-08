@@ -39,7 +39,7 @@ _git_branch() {
   local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
   [[ -z "$branch" ]] && return 0
   [[ "$branch" == "HEAD" ]] && local branch="detached*"
-  echo "$_BOLD$_YELLOW$branch$_RESET"
+  echo "$_BOLD$_BLUE: $_BOLD$_YELLOW$branch$_RESET"
 }
 
 _git_dirty() {
@@ -55,7 +55,7 @@ prompt_dev() {
     && local ps1+="\[$_BOLD$_YELLOW\][\$CURRENT_ENVLIB]\[$_RESET\] "
   local ps1+="\[$_BOLD$_CYAN\]\u \[$_BOLD$_BLUE\]@ \[$_BOLD$_MAGENTA\]\h\[$_RESET\] "
   local ps1+="\[$_BOLD$_BLUE\]: \[$_BOLD$_GREEN\]\w\[$_RESET\] "
-  local ps1+="\$(_git_dirty)\$(_git_branch)\$(_git_dirty) "
+  local ps1+="\$(_git_branch)\$(_git_dirty) "
   local ps1+="\[$_BOLD$_WHITE\]\t\n\$ \[$_RESET\]"
   export PS1="$ps1"
 
