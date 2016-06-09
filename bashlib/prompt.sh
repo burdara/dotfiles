@@ -48,8 +48,24 @@ _git_dirty() {
     && echo "$_BOLD$_RED$_BLINK*$_RESET"
 }
 
+_terminal_clock_start() {
+  while sleep 1; do
+    tput sc
+    tput cup 0 $(($(tput cols)-30))
+    date +"%A, %m/%d/%Y %H:%M:%S"
+    tput rc;
+  done
+}
+
+_terminal_clock_stop() {
+  [[ -n "$TERMINAL_CLOCK_PID" ]] \
+    && kill "$TERMINAL_CLOCK_PID" \
+    && unset TERMINAL_CLOCK_PID
+}
+
 prompt_dev() {
-  # PS1
+  # FOREGROUND
+  ## PS1
   local ps1=""
   [[ -n "$CURRENT_ENVLIB" ]] \
     && local ps1+="\[$_BOLD$_YELLOW\][\$CURRENT_ENVLIB]\[$_RESET\] "
@@ -58,12 +74,14 @@ prompt_dev() {
   local ps1+="\$(_git_branch)\$(_git_dirty) "
   local ps1+="\[$_BOLD$_WHITE\]\t\n\$ \[$_RESET\]"
   export PS1="$ps1"
-
-  # PS2
+  ## PS2
   export PS2="\[$_RED\]→\[$_RESET\] "
+  ## PS3 - unchanged
+  ## PS4 - unchanged
 
-  # PS3 - unchanged
-  # PS4 - unchanged
+  # _terminal_clock_stop
+  # _terminal_clock_start &
+  # export TERMINAL_CLOCK_PID="$!"
 }
 
 #######################################

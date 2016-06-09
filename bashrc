@@ -37,6 +37,9 @@ alias lla='ls -lA'
 # Disk usage by Folder
 alias duf='du -sk * | sort -n | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G)) {if($s<1024) {printf("%.1f",$s);print "$_\t$f"; last};$s=$s/1024}'\'
 
-# For custom user defined paths
-bashrc_custom_file="$HOME/.bashrc_custom"
-[[ -s "$bashrc_custom_file" ]] && source "$bashrc_custom_file"
+# Custom user bashrc
+custom_bashrc="$HOME/.bashrc.$(whoami)"
+[[ ! -e "$custom_bashrc" ]] \
+  && touch "$custom_bashrc" \
+  && printf "$custom_bashrc created for user specific customizations.\n"
+[[ -s "$custom_bashrc" ]] && source "$custom_bashrc"

@@ -22,4 +22,11 @@ export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 # Prompt - Pass prompt pattern key - see bashlibs/prompt.sh
 set_prompt dev
 
+# Custom user bash_profile
+custom_bash_profile="$HOME/.bash_profile.$(whoami)"
+[[ ! -e "$custom_bash_profile" ]] \
+  && touch "$custom_bash_profile" \
+  && printf "$custom_bash_profile created for user specific customizations.\n"
+[[ -s "$custom_bash_profile" ]] && source "$custom_bash_profile"
+
 printf "Done.\n"
