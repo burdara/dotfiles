@@ -83,32 +83,32 @@ create_copy() {
     && cp $dot_dir/$1 $HOME/.$1
 }
 
-create_my_bashlib_file() {
-  for dir in custom; do
-    [[ ! -d $HOME/.bashlib/$dir ]] && mkdir -p $HOME/.bashlib/$dir
-  done
-  my_bashlib=$script_path/bashlib/my_bashlib.sh
-  my_file=$HOME/.bashlib/people/$myself.sh
-  [[ ! -e $my_file ]] && echo -e "Creating empty $my_file" \
-    && echo -e "Add all user specific customizations to $my_file" \
-    && touch $my_file
-  [[ ! -e $my_bashlib ]] \
-    && echo -e "Creating $my_bashlib" \
-    && echo -e "# Projects \n" >> $my_bashlib \
-    && echo -e "# People" >> $my_bashlib \
-    && echo -e "source $my_file \n" >> $my_bashlib
-}
+# create_my_bashlib_file() {
+#   for dir in custom; do
+#     [[ ! -d $HOME/.bashlib/$dir ]] && mkdir -p $HOME/.bashlib/$dir
+#   done
+#   my_bashlib=$script_path/bashlib/my_bashlib.sh
+#   my_file=$HOME/.bashlib/people/$myself.sh
+#   [[ ! -e $my_file ]] && echo -e "Creating empty $my_file" \
+#     && echo -e "Add all user specific customizations to $my_file" \
+#     && touch $my_file
+#   [[ ! -e $my_bashlib ]] \
+#     && echo -e "Creating $my_bashlib" \
+#     && echo -e "# Projects \n" >> $my_bashlib \
+#     && echo -e "# People" >> $my_bashlib \
+#     && echo -e "source $my_file \n" >> $my_bashlib
+# }
 
 install_spf13_vim() {
   [[ -e spf13-vim.lock ]] \
     && echo "remove spf13-vim.lock to reinstall" && return 0
   echo -e "Installing spf-13 vim distribution..."
-  curl https://j.mp/spf13-vim3 -L > spf13-vim.sh && sh spf13-vim.sh
-  touch spf13-vim.lock
+  curl -L -o spf13-vim.sh http://j.mp/spf13-vim3 \
+    && sh spf13-vim.sh \
+    && touch spf13-vim.lock
 }
 
 ### Main
-set -e # Exit on any error
 [[ ! -d "$script_path/bashlib" ]] && echo "Error: missing bashlib directory" && exit 1
 
 confirm_backup
@@ -131,7 +131,7 @@ backup_existing_dotfile "gitignore_global"
 create_copy "gitignore_global"
 
 # Personal file
-create_my_bashlib_file
+# create_my_bashlib_file
 
 ### Extra configuration
 install_spf13_vim

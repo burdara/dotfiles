@@ -69,7 +69,7 @@ setup_git_config() {
   gitconfig_lock_file="$HOME/.gitconfig.lock"
   [[ -e "$gitconfig_lock_file" ]] && return 0
 
-  git config --global core.editor = gitvim
+  git config --global core.editor gitvim
 
   local v="$(git config --global user.name)"
   read -r -p "Enter Git user.name: [$v] " user_input
