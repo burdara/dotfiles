@@ -32,7 +32,7 @@ _benv_init() {
 _benv_destroy() {
   [[ -n "$CURRENT_ENVLIB" ]] \
     && envlib_teardown_$CURRENT_ENVLIB \
-    && unset CURRENT_ENVLIB
+    && unset CURRENT_ENVLIB \
     && source "$HOME/.bash_profile"
 }
 
