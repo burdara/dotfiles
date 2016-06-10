@@ -22,6 +22,9 @@ export LSCOLORS=gxfxcxdxbxegedabagacad   # Color files by type
 # Prompt - Pass prompt pattern key - see bashlibs/prompt.sh
 set_prompt dev
 
+# BENV flag file
+export BENV_ACTIVE_FILE="$HOME/.benv.active"
+
 # Custom user bash_profile
 custom_bash_profile="$HOME/.bash_profile.$(whoami)"
 [[ ! -e "$custom_bash_profile" ]] \

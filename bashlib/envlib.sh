@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 lib_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 template_file="$lib_dir/envlib/.template.sh"
+[[ -z "$BENV_ACTIVE_FILE" ]] && export BENV_ACTIVE_FILE="$HOME/.benv.active"
 
 alias envlib='benv'
 alias env='env | grep -vE "^_(CLR|FMT)_.*$"'
@@ -16,23 +17,33 @@ usage: benv
 EOF
 }
 
+_benv_flag() {
+  if [[ -n "$1" ]]; then
+    export BENV_ACTIVE="$1"
+    echo "$1" > "$BENV_ACTIVE_FILE"
+  else
+    [[ -n "$BENV_ACTIVE" ]] && unset BENV_ACTIVE
+    [[ -e "$BENV_ACTIVE_FILE" ]] && rm -f "$BENV_ACTIVE_FILE"
+  fi
+}
+
 _benv_init() {
   [[ -z "$1" ]] && printf "missing envlib_file arg\n" && return 1
   [[ -z "$2" ]] && printf "missing envlib_name arg\n" && return 1
   [[ ! -e "$1" ]] \
     && printf "creating new envlib file from template: $1\n" \
     && sed -e 's/{NAME}/'$2'/g' \
-           -e 's/{PATH}/'$1'/g' \
+           -e 's/{PATH}/'${1//\//\\/}'/g' \
            "$template_file" > "$1"
   [[ -e "$1" ]] \
     && source "$1" && envlib_init_$2
-  export CURRENT_ENVLIB="$2"
+  _benv_flag "$2"
 }
 
 _benv_destroy() {
-  [[ -n "$CURRENT_ENVLIB" ]] \
-    && envlib_teardown_$CURRENT_ENVLIB \
-    && unset CURRENT_ENVLIB \
+  [[ -n "$BENV_ACTIVE" ]] \
+    && envlib_teardown_$BENV_ACTIVE \
+    && _benv_flag \
     && source "$HOME/.bash_profile"
 }
 
@@ -51,7 +62,7 @@ _benv_rm() {
 #   None
 #######################################
 benv() {
-  [[ -z "$1" ]] && printf "active: ${CURRENT_ENVLIB:-none}\n" && return 0
+  [[ -z "$1" ]] && printf "active: ${BENV_ACTIVE:-none}\n" && return 0
   case "$1" in
     init|rm)
       [[ -z "$2" ]] && _benv_usage && return 1
@@ -63,7 +74,7 @@ benv() {
   local envlib_file="$lib_dir/envlib/$2.sh"
   case "$1" in
     init)
-      _benv_destroy
+      [[ "$2" != "$BENV_ACTIVE" ]] && _benv_destroy
       _benv_init "$envlib_file" "$2"
       ;;
     destroy)
@@ -76,8 +87,11 @@ benv() {
         return 0
       ;;
     rm)
-      [[ "$2" == "$CURRENT_ENVLIB" ]] && _benv_destroy
+      [[ "$2" == "$BENV_ACTIVE" ]] && _benv_destroy
       _benv_rm $envlib_file
       ;;
   esac
 }
+
+[[ -s "$BENV_ACTIVE_FILE" ]] && export BENV_ACTIVE="$(cat $BENV_ACTIVE_FILE)"
+[[ -n "$BENV_ACTIVE" ]] && benv init "$BENV_ACTIVE"

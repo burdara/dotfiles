@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Set the bash prompt
+[[ -z "$BENV_ACTIVE_FILE" ]] && export BENV_ACTIVE_FILE="$HOME/.benv.active"
 
 define_colors() {
   [[ "$COLORTERM" == "gnome-*" && "$TERM" == "xterm" ]] \
@@ -34,9 +35,11 @@ define_colors() {
   [[ -z "$_FMT_END_STANDOUT" ]] && export _FMT_END_STANDOUT=$(tput rmso || echo "\e[27m")
 }
 
-_current_envlib() {
-  [[ -n "$CURRENT_ENVLIB" ]] \
-    && echo "$_FMT_BOLD$_CLR_YELLOW[$CURRENT_ENVLIB]$_RESET "
+_benv_active() {
+  # Check whether or not active file removed in session.
+  [[ ! -s "$BENV_ACTIVE_FILE" && -n "$BENV_ACTIVE" ]] && benv destroy &>/dev/null
+  [[ -n "$BENV_ACTIVE" ]] \
+    && echo "$_FMT_BOLD$_CLR_YELLOW[$BENV_ACTIVE]$_RESET "
 }
 
 _git_branch() {
@@ -71,7 +74,7 @@ _terminal_clock_stop() {
 prompt_dev() {
   # FOREGROUND
   ## PS1
-  local ps1="\$(_current_envlib)"
+  local ps1="\$(_benv_active)"
   local ps1+="\[$_FMT_BOLD$_CLR_CYAN\]\u \[$_FMT_BOLD$_CLR_BLUE\]@ \[$_FMT_BOLD$_CLR_MAGENTA\]\h\[$_RESET\] "
   local ps1+="\[$_FMT_BOLD$_CLR_BLUE\]: \[$_FMT_BOLD$_CLR_GREEN\]\w\[$_RESET\] "
   local ps1+="\$(_git_branch)\$(_git_dirty) "
