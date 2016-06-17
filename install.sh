@@ -2,7 +2,7 @@
 #
 # This script creates symbolic links from the
 # home directory to files managed here.
-
+[[ "$1" == "-s" ]] && silent_mode="true"
 myself=$(whoami)
 dot_dir="$HOME/dotfiles"
 backup_dir="$HOME/dotfiles/backups"
@@ -111,7 +111,7 @@ install_spf13_vim() {
 ### Main
 [[ ! -d "$script_path/bashlib" ]] && echo "Error: missing bashlib directory" && exit 1
 
-confirm_backup
+[[ "$silent_mode" != "true" ]] && confirm_backup
 create_backup_dir
 
 # Backup any existing dotfiles in homedir to backup directory,
