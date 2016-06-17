@@ -46,7 +46,7 @@ _git_branch() {
   ! which git &>/dev/null && return 0
   local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
   [[ -z "$branch" ]] && return 0
-  [[ "$branch" == "HEAD" ]] && local branch="detached*"
+  [[ "$branch" == "HEAD" ]] && local branch="detached"
   echo "$_FMT_BOLD$_CLR_BLUE: $_FMT_BOLD$_CLR_YELLOW$branch$_RESET"
 }
 

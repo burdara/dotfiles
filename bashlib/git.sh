@@ -30,8 +30,8 @@ alias gundo="git reset HEAD"
 #   None
 #######################################
 create_bare_vim() {
-  home_bin_dir="$HOME/bin"
-  [[ -d "$home_bin_dir" ]] && mkdir -p "$home_bin_dir"
+  local home_bin_dir="$HOME/bin"
+  [[ ! -d "$home_bin_dir" ]] && mkdir -p "$home_bin_dir"
   git_vim_file="$home_bin_dir/gitvim"
   [[ -x "$git_vim_file" ]] && return 0
   printf "vim -u 'NONE' \$@" > $git_vim_file
