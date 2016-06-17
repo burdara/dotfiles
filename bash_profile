@@ -9,7 +9,7 @@ bashlib_dir="$HOME/.bashlib"
 # Source bashlib file (first level)
 [[ -r "$bashrc_file" ]] && source "$bashrc_file"
 if [[ -d "$HOME/.bashlib" ]]; then
-  for f in $(find $HOME/.bashlib/ -type f -maxdepth 1 \( ! -iname ".*" \)); do
+  for f in $(find $HOME/.bashlib/ -maxdepth 1 -type f \( ! -iname ".*" \)); do
     source $f
   done
 fi
