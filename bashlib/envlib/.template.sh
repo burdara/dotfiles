@@ -25,6 +25,7 @@ my_name="{NAME}"
 ########################################
 envlib_init_{NAME}() {
   printf "Initilizing '$my_name'\n"
+  export _PATH_BACKUP="$PATH"
 
   # user custom init
   # TODO
@@ -52,8 +53,11 @@ envlib_teardown_{NAME}() {
   # remote exported variables
   local exports=$(cat $my_script | perl -ne 'if (m/export ([a-zA-Z0-9_-]+)=/) { print "$1\n" }')
   for e in $exports; do
-    unset "$e"
+    [[ "$e" != "_PATH_BACKUP" ]] && unset "$e"
   done
+
+  # reset PATH
+  [[ -n "$_PATH_BACKUP" ]] && export PATH="$_PATH_BACKUP" && unset _PATH_BACKUP
 
   # user custom teardown
   # TODO
