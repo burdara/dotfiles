@@ -12,6 +12,10 @@ usage: benv
        benv init name
        benv destroy
        benv rm name
+       --
+       benv tmp name
+       benv reset
+       --
        benv list
        benv help
 EOF
@@ -20,24 +24,24 @@ EOF
 _benv_flag() {
   if [[ -n "$1" ]]; then
     export BENV_ACTIVE="$1"
-    echo "$1" > "$BENV_ACTIVE_FILE"
+    [[ -z "$BENV_TMP" ]] && echo "$1" > "$BENV_ACTIVE_FILE"
   else
     [[ -n "$BENV_ACTIVE" ]] && unset BENV_ACTIVE
-    [[ -e "$BENV_ACTIVE_FILE" ]] && rm -f "$BENV_ACTIVE_FILE"
+    [[ -e "$BENV_ACTIVE_FILE" && -z "$BENV_TMP" ]] && rm -f "$BENV_ACTIVE_FILE"
   fi
 }
 
 _benv_init() {
-  [[ -z "$1" ]] && printf "missing envlib_file arg\n" && return 1
-  [[ -z "$2" ]] && printf "missing envlib_name arg\n" && return 1
-  [[ ! -e "$1" ]] \
-    && printf "creating new envlib file from template: $1\n" \
-    && sed -e 's/{NAME}/'$2'/g' \
-           -e 's/{PATH}/'${1//\//\\/}'/g' \
-           "$template_file" > "$1"
-  [[ -e "$1" ]] \
-    && source "$1" && envlib_init_$2
-  _benv_flag "$2"
+  [[ -z "$1" ]] && printf "missing envlib_name arg\n" && return 1
+  local envlib_file="$lib_dir/envlib/$1.sh"
+  [[ ! -e "$envlib_file" ]] \
+    && printf "creating new envlib file from template: $envlib_file\n" \
+    && sed -e 's/{NAME}/'$1'/g' \
+           -e 's/{PATH}/'${envlib_file//\//\\/}'/g' \
+           "$template_file" > "$envlib_file"
+  [[ -e "$envlib_file" ]] \
+    && source "$envlib_file" && envlib_init_$1
+  _benv_flag "$1"
 }
 
 _benv_destroy() {
@@ -62,20 +66,32 @@ _benv_rm() {
 #   None
 #######################################
 benv() {
-  [[ -z "$1" ]] && printf "active: ${BENV_ACTIVE:-none}\n" && return 0
+  if [[ -z "$1" ]]; then
+    printf "active: ${BENV_ACTIVE:-none}\n"
+    if [[ -n "$BENV_TMP" ]]; then
+      printf "tmp: true\n"
+      [[ -s "$BENV_ACTIVE_FILE" ]] && printf "original: $(cat $BENV_ACTIVE_FILE)\n"
+    fi
+    return 0
+  fi
   case "$1" in
-    init|rm)
+    init|rm|tmp)
       [[ -z "$2" ]] && _benv_usage && return 1
       ;;
-    destroy|list) ;;
+    destroy|list|reset) ;;
     *) _benv_usage && return 1
   esac
 
-  local envlib_file="$lib_dir/envlib/$2.sh"
   case "$1" in
-    init)
+    init|tmp)
+      [[ "$1" == "tmp" ]] && export BENV_TMP=true
       [[ "$2" != "$BENV_ACTIVE" ]] && _benv_destroy
-      _benv_init "$envlib_file" "$2"
+      _benv_init "$2"
+      ;;
+    reset)
+      _benv_destroy
+      unset BENV_TMP
+      [[ -s "$BENV_ACTIVE_FILE" ]] && _benv_init "$(cat $BENV_ACTIVE_FILE)"
       ;;
     destroy)
       _benv_destroy
