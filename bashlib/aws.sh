@@ -70,15 +70,35 @@ awsenv() {
   [[ "$1" == "-c" ]] && local printc=1 && shift
   if [[ -z "$1" ]]; then
     printf "aws_profile: ${AWS_DEFAULT_PROFILE:-none}\n"
-    printf "aws_region: $AWS_REGION\n"
+    printf "aws_region: ${AWS_DEFAULT_REGION:-none}\n"
     [[ "$printc" -eq 1 ]] && print_aws_commands
     return 0
   fi
   check_aws_config || return $?
-  export AWS_DEFAULT_PROFILE="$1"
-  export AWS_REGION="${2:-$(aws configure get $AWS_DEFAULT_PROFILE.region)}"
-  export AWS_ACCESS_KEY_ID="$(aws configure get $AWS_DEFAULT_PROFILE.aws_access_key_id)"
-  export AWS_SECRET_ACCESS_KEY="$(aws configure get $AWS_DEFAULT_PROFILE.aws_secret_access_key)"
-  export AWS_DEFAULT_REGION="$AWS_REGION"
+  local profile="$1"
+  export AWS_DEFAULT_PROFILE="$profile"
+  # role arn?
+  export AWS_ROLE_ARN="$(aws configure get $profile.role_arn)"
+  # src profile?
+  export AWS_SRC_PROFILE=$(aws configure get $profile.source_profile)
+  [[ -n "$AWS_SRC_PROFILE" ]] && local profile="$AWS_SRC_PROFILE"
+  # set standards
+  export AWS_DEFAULT_REGION="${2:-$(aws configure get $profile.region)}"
+  export AWS_ACCESS_KEY_ID="$(aws configure get $profile.aws_access_key_id)"
+  export AWS_SECRET_ACCESS_KEY="$(aws configure get $profile.aws_secret_access_key)"
+  # Non-standard env variables
+  export AWS_REGION="$AWS_REGION"
+  export AWS_PROFILE="$AWS_DEFAULT_PROFILE"
+  # Cleanup empty variables
+  for v in AWS_DEFAULT_PROFILE \
+           AWS_ROLE_ARN \
+           AWS_SRC_PROFILE \
+           AWS_DEFAULT_REGION \
+           AWS_ACCESS_KEY_ID \
+           AWS_SECRET_ACCESS_KEY \
+           AWS_REGION \
+           AWS_PROFILE; do
+    [[ -z "${!v}" ]] && unset "$v"
+  done
   [[ "$printc" -eq 1 ]] && print_aws_commands
 }
