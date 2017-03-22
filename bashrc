@@ -24,9 +24,6 @@ paths=(
 )
 add_paths ${paths[@]}
 
-# For SSH
-export SHCN="StrictHostKeyChecking=no"
-
 ### Aliases
 # ls
 alias l='ls -CF'

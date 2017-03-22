@@ -26,7 +26,7 @@ extglob() {
 #   None
 ########################################
 dnsflush() {
-  [[ "$(uname)" == "Darwin" ]] && sudo dscacheutil -flushcache
+  [[ "$(uname)" == "Darwin" ]] && sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
 }
 
 ########################################

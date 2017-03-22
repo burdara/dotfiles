@@ -10,6 +10,7 @@ _benv_usage() {
   cat <<EOF
 usage: benv
        benv init name
+       benv refresh
        benv destroy
        benv rm name
        --
@@ -52,8 +53,9 @@ _benv_destroy() {
 }
 
 _benv_rm() {
-  [[ -z "$1" ]] && printf "missing envlib_file arg\n" && return 1
-  [[ -e "$1" ]] && rm -f $1
+  [[ -z "$1" ]] && printf "missing envlib_name arg\n" && return 1
+  local envlib_file="$lib_dir/envlib/$1.sh"
+  [[ -e "$envlib_file" ]] && rm -f $1
 }
 
 #######################################
@@ -78,7 +80,7 @@ benv() {
     init|rm|tmp)
       [[ -z "$2" ]] && _benv_usage && return 1
       ;;
-    destroy|list|reset) ;;
+    destroy|list|reset|refresh) ;;
     *) _benv_usage && return 1
   esac
 
@@ -88,9 +90,11 @@ benv() {
       [[ "$2" != "$BENV_ACTIVE" ]] && _benv_destroy
       _benv_init "$2"
       ;;
+    refresh)
+      _benv_init "$BENV_ACTIVE"
+      ;;
     reset)
       _benv_destroy
-      unset BENV_TMP
       [[ -s "$BENV_ACTIVE_FILE" ]] && _benv_init "$(cat $BENV_ACTIVE_FILE)"
       ;;
     destroy)
@@ -104,7 +108,7 @@ benv() {
       ;;
     rm)
       [[ "$2" == "$BENV_ACTIVE" ]] && _benv_destroy
-      _benv_rm $envlib_file
+      _benv_rm "$2"
       ;;
   esac
 }
