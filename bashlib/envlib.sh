@@ -91,7 +91,11 @@ benv() {
       _benv_init "$2"
       ;;
     refresh)
-      _benv_init "$BENV_ACTIVE"
+      if [[ -n "$BENV_ACTIVE" ]]; then
+        local ba="$BENV_ACTIVE"
+        _benv_destroy
+        _benv_init "$ba"
+      fi
       ;;
     reset)
       _benv_destroy

@@ -13,13 +13,13 @@ sshw() {
     case "$1" in
       -t) shift;
         echo "port provided; opening tunnel to localhost"
-        local ssh_options="-N -f -L $4:localhost:$4"
+        local ssh_options="-N -f -L $1:localhost:$1"
         ;;
       --) shift; local c="-T \"$@\"" ;;
     esac
     shift
   done
-  eval "${SSH_CMD:-ssh} -i $HOME/.ssh/$k $ssh_options $u@$h $c"
+  eval "${SSH_CMD:-ssh} -i $k $ssh_options $u@$h $c"
 }
 
 csshw() {
@@ -31,9 +31,9 @@ csshw() {
   local user_name="$2"
   shift 2
   if [[ "$cmd" == "i2cssh" ]]; then
-    local options="--iterm2 -X i=$HOME/.ssh/$key_name -X o=\$SHKC"
+    local options="--iterm2 -X i=$key_name -X o=\$SHKC"
   else
-    local options="--ssh_args \"-i $HOME/.ssh/$key_name -o $SHKC\""
+    local options="--ssh_args \"-i $key_name -o $SHKC\""
   fi
   for host in $@; do
     local host_list="$host_list $user_name@$host"
