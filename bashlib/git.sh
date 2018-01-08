@@ -108,6 +108,6 @@ setup_git_config() {
 
 create_bare_vim
 setup_git_config
-[[ ! -e "/usr/share/bash-completion/completions/git" ]] \
-  && download_bash_source_file "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
-download_bash_source_file "https://raw.githubusercontent.com/bobthecow/git-flow-completion/master/git-flow-completion.bash"
+#[[ ! -e "/usr/share/bash-completion/completions/git" ]] \
+#  && download_bash_source_file "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+#download_bash_source_file "https://raw.githubusercontent.com/bobthecow/git-flow-completion/master/git-flow-completion.bash"
