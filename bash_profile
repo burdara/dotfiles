@@ -33,3 +33,5 @@ custom_bash_profile="$HOME/.bash_profile.$(whoami)"
 [[ -s "$custom_bash_profile" ]] && source "$custom_bash_profile"
 
 printf "Done.\n"
+
+export PATH="$HOME/.cargo/bin:$PATH"

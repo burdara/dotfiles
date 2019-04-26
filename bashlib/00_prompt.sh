@@ -42,19 +42,19 @@ _benv_active() {
     && echo "$_FMT_BOLD$_CLR_YELLOW[$BENV_ACTIVE]$_RESET "
 }
 
-_git_branch() {
-  ! which git &>/dev/null && return 0
-  local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  [[ -z "$branch" ]] && return 0
-  [[ "$branch" == "HEAD" ]] && local branch="detached"
-  echo "$_FMT_BOLD$_CLR_BLUE: $_FMT_BOLD$_CLR_YELLOW$branch$_RESET"
-}
+# _git_branch() {
+#   ! which git &>/dev/null && return 0
+#   local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+#   [[ -z "$branch" ]] && return 0
+#   [[ "$branch" == "HEAD" ]] && local branch="detached"
+#   echo "$_FMT_BOLD$_CLR_BLUE: $_FMT_BOLD$_CLR_YELLOW$branch$_RESET"
+# }
 
-_git_dirty() {
-  ! which git &>/dev/null && return 0
-  [[ -n "$(git status --porcelain 2>/dev/null)" ]] \
-    && echo "$_FMT_BOLD$_CLR_RED$_FMT_BLINK*$_RESET"
-}
+# _git_dirty() {
+#   ! which git &>/dev/null && return 0
+#   [[ -n "$(git status --porcelain 2>/dev/null)" ]] \
+#     && echo "$_FMT_BOLD$_CLR_RED$_FMT_BLINK*$_RESET"
+# }
 
 _terminal_clock_start() {
   while sleep 1; do
@@ -77,7 +77,7 @@ prompt_dev() {
   local ps1="\$(_benv_active)"
   local ps1+="\[$_FMT_BOLD$_CLR_CYAN\]\u \[$_FMT_BOLD$_CLR_BLUE\]@ \[$_FMT_BOLD$_CLR_MAGENTA\]\h\[$_RESET\] "
   local ps1+="\[$_FMT_BOLD$_CLR_BLUE\]: \[$_FMT_BOLD$_CLR_GREEN\]\w\[$_RESET\] "
-  local ps1+="\$(_git_branch)\$(_git_dirty) "
+  local ps1+="\$(__git_ps1) "
   local ps1+="\[$_FMT_BOLD$_CLR_WHITE\]\t\n\$ \[$_RESET\]"
   export PS1="$ps1"
   ## PS2
