@@ -1,0 +1,4 @@
+#!/bin/sh
+#
+# Overides vimrc file to prevent potential issues with components.
+vim -u 'NONE' $@

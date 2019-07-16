@@ -1,7 +1,0 @@
-" Custom Local Options for spf-13
-"   This gets loaded at the start, before spf-13 distro
-
-"let g:spf13_leader = "'"
-
-" Gives the special symbols in the line below
-let g:airline_powerline_fonts = "1"

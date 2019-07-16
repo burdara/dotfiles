@@ -1,0 +1,7 @@
+[user]
+	name = Robbie Burda
+	email = robbie@cloud-elements.com
+[diff]
+	tool = vimdiff
+[merge]
+	tool = vimdiff

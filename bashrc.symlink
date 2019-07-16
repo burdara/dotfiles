@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# Bash run commands.
+
+[[ ! -d "$HOME/bin" ]] && mkdir -p "$HOME/bin"
+
+# Checks specified directoriess and adds them to PATH, if valid.
+# Globals:
+#   None.
+# Arguments:
+#   1: Optional -p|--prepend to add to front of PATH
+#   @: List of directory paths
+# Returns:
+#   None.
+add_paths() {
+  local loc p paths
+  while [[ -n "$1" ]]; do
+    case "$1" in
+      -p|--prepend) loc="pre" ;;
+      *) paths+="$1 "
+    esac
+    shift
+  done
+  for p in $paths; do
+    [[ ! -d "$p" ]] && continue
+    if [[ ! "$PATH" =~ [:]?${p}[:]? ]]; then 
+      [[ "$loc" == "pre" ]] && PATH="$p:$PATH" || PATH="$PATH:$p"
+      export PATH
+    fi
+  done
+}
+
+# Default paths
+add_paths \
+  "$HOME/bin" \
+  "/usr/local/bin" \
+  "/usr/bin" \
+  "/bin" \
+  "/usr/local/sbin" \
+  "/usr/sbin" \
+  "/sbin" \
+
+# Default Aliases
+alias ls='ls -F'
+alias la='ls -AF'
+alias ll='ls -l'
+alias lla='ls -lA'

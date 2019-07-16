@@ -1,5 +1,4 @@
 # Global gitignore
-# If not in .gitconfig, execute 'git config --global core.excludesfile ~/.gitignore_global'
 
 ### Compiled artifacts
 *.com
@@ -35,5 +34,5 @@ Thumbs.db
 *~
 .*.swp
 
-### Microsoft
-~$*
+### My Temp files
+.tmp*

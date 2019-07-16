@@ -1,0 +1,35 @@
+[alias]
+  br = branch
+  ci = commit
+  co = checkout
+  d = difftool
+  dlc = diff --cached HEAD^
+  gl  = log -10 --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
+  gll = log     --color=always --all --graph --topo-order --pretty='format: %Cgreen%h%Creset %s%Cred%d%Creset%n'
+  lastcommit = log -1 --format=format:%h
+  lc = log ORIG_HEAD.. --stat
+  lds = log --pretty=format:\"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --date=short
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  ls  = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Credset%s%Cblue\\ [%cn]\" --decorate
+  patch = diff --no-ext-diff
+  s = status
+  sa = stash apply
+  sl = stash list
+  ss = stash save
+  st = status -s
+[color]
+  ui = auto
+[core]
+	autocrlf = input
+  editor = ~/bin/vim-bare
+  excludesfile = ~/.config/git/ignore
+[include]
+  path = ~/.config/git/config.custom
+[hub]
+  protocol = https
+[merge]
+  defaultToUpstream = true
+[push]
+  default = simple
+[diff "sopsdiffer"]
+	textconv = sops -d

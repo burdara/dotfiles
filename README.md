@@ -1,18 +1,2 @@
-# dotfiles
-Personal dotfiles for home directory
+# burdara dotfiles
 
-## Installation:
-```
-cd ~
-git clone https://github.com/robbieb/dotfiles.git
-cd dotfiles
-./install.sh
-```
-
-This will backup any existing dotfiles to dotfiles/backups/ and link to all of the contained files as dotfiles in the home directory, except:
-* README.md
-* install.sh
-* backups/
-
-## Usage:
-Open a new shell session

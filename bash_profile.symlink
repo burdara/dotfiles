@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Bash Profile.
+
+# Sources bash profiles
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+_source_bash_profiles() {
+  local libs lib
+  if [[ -d "$HOME/.bash_profile.d" ]]; then
+    libs="$(find -L "$HOME/.bash_profile.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)"
+    for lib in $libs; do
+      # shellcheck source=/dev/null
+      [[ -r "$lib" ]] && source "$lib"
+    done
+  fi
+}
+
+printf "Loading dotfiles...\\n"
+# Set vi mode
+set -o vi
+# Turn on colors
+export CLICOLOR=1
+# Color files by type
+export LSCOLORS=gxfxcxdxbxegedabagacad
+# shellcheck source=/dev/null
+[[ -r "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
+[[ "${BASH_VERSION%%.*}" -ge 4 ]] && _source_bash_profiles \
+  || printf "BASH version 4 or higher is required!\\n"
+unset _source_bash_profiles
+printf "Done. Happy coding!\\n"
