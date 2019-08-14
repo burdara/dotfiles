@@ -18,8 +18,14 @@ sshw() {
   local cmd hosts full_cmd show_cmd c_hosts c_options
   while [[ -n "$1" ]]; do
     case "$1" in
-      -i) shift; options+="-i $1 " ;;
-      -t) shift; options+="-N -f -L $1:localhost:$1 " ;;
+      -i) shift; 
+        [[ -n "$options" ]] && options+=" "
+        options+="-i $1"
+        ;;
+      -t) shift; 
+        [[ -n "$options" ]] && options+=" "
+        options+="-N -f -L $1:localhost:$1"
+        ;;
       -u) shift; user="$1" ;;
       -h) shift; 
         [[ -n "$hosts" ]] && hosts+=" "

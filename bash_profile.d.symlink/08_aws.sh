@@ -213,6 +213,7 @@ options:
   -I, --interactive            Interactive mode.
   -h, --help                   Prints usage.
   -r, --region <region>        Sets AWS region.
+  [ssh_options]                Additional SSH or CSSHx options.
 EOF
         return 0
         ;;
