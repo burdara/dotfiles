@@ -363,3 +363,64 @@ EOF
 
   aws ssm start-session --region "$region" --target "$target"
 }
+
+# AWS MFA wrapper
+# Globals:
+#   
+# Arguments:
+#   1: mfa token
+# Returns:
+#   None
+aws-mfa() {
+  local mfa_serial_number mfa_code ttl_seconds session_creds_json rc
+  local default_ttl_seconds="28800"
+  local session_profile_name="session"
+  
+  while [[ -n "$1" ]]; do
+    case "$1" in
+      -c|--code) shift; mfa_code="$1" ;;
+      -s|--serial) shift; mfa_serial_number="$1" ;;
+      -t|--ttl) shift; ttl_seconds="$1" ;;
+      -h|--help) cat <<EOF
+usage: aws-mfa [options]
+options:
+  -c, --code     The  value provided by the MFA device.
+  -s, --serial   The identification number of the MFA device that is associated with the IAM user.
+  -t, --ttl      The duration, in seconds, that the credentials should remain valid. (default $default_ttl_seconds)
+  -h, --help
+EOF
+    esac
+  done
+
+  # If empty attempt discovery or prompt
+  [[ -z "$mfa_serial_number" ]] \
+    && mfa_serial_number="$(aws iam list-mfa-devices | jq -r '.MFADevices[0].SerialNumber')"
+  [[ -z "$mfa_code" ]] \
+    && read -r -p "Enter MFA code: " mfa_code
+
+  # Double check emptiness
+  [[ -z "$mfa_serial_number" ]] \
+    && echo "mfa_serial_number not specified or empty." && return 1
+  [[ -z "$mfa_code" ]] \
+    && echo "mfa_code not specified or empty." && return 1
+
+  session_creds_json="$(aws sts get-session-token \
+    --serial-number "$mfa_serial_number" \
+    --token-code "$mfa_code" \
+    --duration-seconds "${ttl_seconds:-$default_ttl_seconds}")"
+  rc="$?"; [[ "$rc" -ne 0 ]] && echo "failed to get session token" && return "$rc" 
+    
+  aws configure --profile "$session_profile_name" set aws_access_key_id \
+    "$(echo "$session_creds_json" | jq -r .Credentials.AccessKeyId)"
+
+  aws configure --profile "$session_profile_name" set aws_secret_access_key \
+    "$(echo "$session_creds_json" | jq -r .Credentials.SecretAccessKey)"
+
+  aws configure --profile "$session_profile_name" set aws_session_token \
+    "$(echo "$session_creds_json" | jq -r .Credentials.SessionToken)"
+
+cat <<EOF
+AWS profile \"$session_profile_name\" has been created.
+Please set your AWS_DEFAULT_PROFILE or us --profile options.
+EOF
+}
