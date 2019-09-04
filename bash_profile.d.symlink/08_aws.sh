@@ -11,44 +11,58 @@
 #   PS1 informations
 aws_ps1() {
   [[ "${AWS_PS1:-on}" == "off" ]] && return 0
-  local _clr_red _clr_green _clr_cyan _clr_magenta _clr_reset
-  local _session _expire
+  local _clr_red _clr_green _clr_cyan _clr_magenta _clr_reset _expire
   _clr_red="$(tput setaf 1 || echo "\e[31m")"
   _clr_green="$(tput setaf 2 || echo "\e[32m")"
   _clr_cyan="$(tput setaf 6 || echo "\e[36m")"
   _clr_magenta="$(tput setaf 5 || echo "\e[35m")"
   _clr_reset="$(tput sgr0 || echo "\e[0m")"
 
-  local _ps1_sts _ps1_key _ps1_sep _ps1_zone
+  [[ -d "$HOME/.aws" ]] && mkdir -p "$HOME/.aws"
+  local _ps1_sts _ps1_key _ps1_sep1 _ps1_sep2 _ps1_zone
   local _ps1_cache_file="$HOME/.aws/.ps1_cache"
+
   # shellcheck source=/dev/null
   [[ -r "$_ps1_cache_file" ]] && source "$_ps1_cache_file"
-  if [[ -n "$AWS_DEFAULT_PROFILE" ]]; then
-    if [[ "$AWS_PS1_CACHE_PROFILE" != "$AWS_DEFAULT_PROFILE" ]]; then
-      AWS_PS1_CACHE_SESSION="$(aws configure get "$AWS_DEFAULT_PROFILE.aws_session_token")"
-      AWS_PS1_CACHE_EXPIRE="$(aws configure get "$AWS_DEFAULT_PROFILE.aws_session_token_expire")"
+  
+  # check profile, if specified
+  local _profile="${AWS_PROFILE:-$AWS_DEFAULT_PROFILE}"
+  if [[ -n "$_profile" ]]; then
+    if [[ ! -r "$_ps1_cache_file" \
+      || -z "$AWS_PS1_CACHE_PROFILE" \
+      || "$AWS_PS1_CACHE_PROFILE" != "$_profile" ]]
+    then
+      AWS_PS1_CACHE_SESSION="$(aws configure get "$_profile.aws_session_token")"
+      AWS_PS1_CACHE_EXPIRE="$(aws configure get "$_profile.aws_session_token_expire")"
+      AWS_PS1_CACHE_PROFILE="$_profile"
       cat <<EOF >"$_ps1_cache_file"
+export AWS_PS1_CACHE_PROFILE="$AWS_PS1_CACHE_PROFILE"
 export AWS_PS1_CACHE_SESSION="$AWS_PS1_CACHE_SESSION"
 export AWS_PS1_CACHE_EXPIRE="$AWS_PS1_CACHE_EXPIRE"
-export AWS_PS1_CACHE_PROFILE="$AWS_DEFAULT_PROFILE"
 EOF
     fi
-    _ps1_key="$AWS_DEFAULT_PROFILE"
+    _ps1_key="$_profile"
     [[ -n "$AWS_PS1_CACHE_SESSION" ]] && _ps1_sts="*"
     _expire="$AWS_PS1_CACHE_EXPIRE"
   fi
+
+  # check env variables, if specified
   [[ -n "$AWS_SESSION_TOKEN" ]] && _ps1_sts="*"
   [[ -n "$AWS_SESSION_TOKEN_EXPIRE" ]] && _expire="$AWS_SESSION_TOKEN_EXPIRE"
-  if [[ -n "$_expire" ]]; then
-    _ps1_ttl="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date +"%s")))"
-    [[ "$_ps1_ttl" -lt 0 ]] && _ps1_ttl=0
-    [[ -n "$_ps1_ttl" ]] && _ps1_ttl=":${_clr_red}${_ps1_ttl}s"
-  fi
   [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] && _ps1_key="keys"
-  [[ -n "$_ps1_key" ]] && _ps1_sep=":"
   [[ -n "$AWS_DEFAULT_REGION" ]] && _ps1_zone="$AWS_DEFAULT_REGION"
+  [[ -n "$_ps1_zone" ]] && _ps1_sep1=":"
+
+  if [[ -n "$_expire" ]]; then
+    _ps1_ttl="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+    [[ "$_ps1_ttl" -lt 0 ]] && _ps1_ttl=0
+    [[ -n "$_ps1_ttl" ]] && _ps1_sep2=":"
+  else
+    _ps1_ttl=""
+  fi
+
   [[ -n "$_ps1_key" || -n "$_ps1_zone" ]] \
-    && echo "(${_clr_magenta}aws${_clr_reset}|${_clr_green}${_ps1_key}${_clr_reset}${_clr_red}${_ps1_sts}${_clr_reset}${_ps1_sep}${_clr_cyan}${_ps1_zone}${_clr_reset}${_ps1_ttl}${_clr_reset})"
+    && echo "(${_clr_magenta}aws${_clr_reset}|${_clr_green}${_ps1_key}${_clr_reset}${_clr_red}${_ps1_sts}${_clr_reset}${_ps1_sep1}${_clr_cyan}${_ps1_zone}${_clr_reset}${_ps1_sep2}${_clr_red}${_ps1_ttl}${_clr_reset})"
 }
 
 aws_ps1_off() {
@@ -402,79 +416,103 @@ EOF
 
 # AWS MFA wrapper
 # Globals:
-#   
-# Arguments:
-#   1: mfa token
-# Returns:
 #   None
+# Arguments:
+#   [options]: refer to usage
+# Returns:
+#   Depends on output options
 aws-mfa() {
   local mfa_serial_number mfa_code ttl_seconds session_creds_json 
-  local rc mfa_name session_profile_name
+  local mfa_name session_profile_name output_type
   local default_ttl_seconds="28800"
-  local profile_swap=0
+  local default_output_type="profile"
+  local set_output="false"
+
+  ! command -v jq &>/dev/null \
+    && echo "jq binary required; please install first" && return 1
   
   while [[ -n "$1" ]]; do
     case "$1" in
       -c|--code) shift; mfa_code="$1" ;;
+      -o|--output) shift; output_type="$1" ;;
       -s|--serial) shift; mfa_serial_number="$1" ;;
       -t|--ttl) shift; ttl_seconds="$1" ;;
-      --no-swap) profile_swap=1 ;;
+      --set) set_output="true" ;;
       -h|--help) cat <<EOF
 usage: aws-mfa [options]
 options:
   -c, --code <mfa>     The  value provided by the MFA device.
+  -o, --output <type>  Output types: json, profile, env (default $default_output_type)
   -s, --serial <arn>   The identification number of the MFA device that is associated with the IAM user.
   -t, --ttl <secs>     The duration, in seconds, that the credentials should remain valid. (default $default_ttl_seconds)
-  --no-swap            Do not swap to new session profile afterwards.
+  --set                For 'env' output type, export the environment variables
+                       Fpr 'profile' output type, create the profile and export environment variable
   -h, --help
 EOF
       return 0
     esac
+    shift
   done
 
   # If empty attempt discovery or prompt
   [[ -z "$mfa_serial_number" ]] \
     && mfa_serial_number="$(aws iam list-mfa-devices | jq -r '.MFADevices[0].SerialNumber')" \
-    && echo "using $mfa_serial_number"
+    && echo "# MFA Serial: $mfa_serial_number"
   [[ -z "$mfa_code" ]] \
-    && read -r -p "Enter MFA code: " mfa_code
+    && read -r -p "# Enter MFA code: " mfa_code
 
   # Double check emptiness
   [[ -z "$mfa_serial_number" ]] \
-    && echo "mfa_serial_number not specified or empty." && return 1
+    && >&2 echo "[error] mfa_serial_number not specified or empty." && return 1
   [[ -z "$mfa_code" ]] \
-    && echo "mfa_code not specified or empty." && return 1
+    && >&2 echo "mfa_code not specified or empty." && return 1
 
-  mfa_name="${mfa_serial_number##*/}"
-  session_profile_name="sts-${mfa_name}"
-
-  # unset session if present
-  [[ "$AWS_DEFAULT_PROFILE"  == "$session_profile_name" ]] && awsenv -p default
-
+  # Retrieve session credentials
   session_creds_json="$(aws sts get-session-token \
     --serial-number "$mfa_serial_number" \
     --token-code "$mfa_code" \
-    --duration-seconds "${ttl_seconds:-$default_ttl_seconds}")"
-  rc="$?"; [[ "$rc" -ne 0 ]] && echo "failed to get session token" && return "$rc" 
-    
-  aws configure --profile "$session_profile_name" set aws_access_key_id \
-    "$(echo "$session_creds_json" | jq -r .Credentials.AccessKeyId)"
+    --duration-seconds "${ttl_seconds:-$default_ttl_seconds}")" \
+    || { >&2 echo "failed to get session token" && return "$?" ;}
 
-  aws configure --profile "$session_profile_name" set aws_secret_access_key \
-    "$(echo "$session_creds_json" | jq -r .Credentials.SecretAccessKey)"
-
-  aws configure --profile "$session_profile_name" set aws_session_token \
-    "$(echo "$session_creds_json" | jq -r .Credentials.SessionToken)"
-  
-  aws configure --profile "$session_profile_name" set aws_session_token_expire \
-    "$(echo "$session_creds_json" | jq -r .Credentials.Expiration)"
-
-  if [[ "$profile_swap" -eq 0 ]]; then
-    awsenv -p "$session_profile_name"
-  else
-    cat <<EOF
-AWS profile "$session_profile_name" has been created.
-Please set your AWS_DEFAULT_PROFILE or use --profile options.
+  local aws_access_key_id aws_secret_access_key aws_session_token aws_session_token_expire
+  aws_access_key_id="$(echo "$session_creds_json" | jq -r .Credentials.AccessKeyId)"
+  aws_secret_access_key="$(echo "$session_creds_json" | jq -r .Credentials.SecretAccessKey)"
+  aws_session_token="$(echo "$session_creds_json" | jq -r .Credentials.SessionToken)"
+  aws_session_token_expire="$(echo "$session_creds_json" | jq -r .Credentials.Expiration)"
+  case "${output_type:-$default_output_type}" in
+    profile)
+      mfa_name="${mfa_serial_number##*/}"
+      session_profile_name="sts-${mfa_name}"
+      if [[ "$set_output" == "true" ]]; then
+        aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_access_key_id"
+        aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
+        aws configure --profile "$session_profile_name" set aws_session_token "$aws_session_token"
+        aws configure --profile "$session_profile_name" set aws_session_token_expire "$aws_session_token_expire"
+        export AWS_PROFILE="$session_profile_name"
+      fi
+      cat <<EOF
+aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_access_key_id"
+aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
+aws configure --profile "$session_profile_name" set aws_session_token "$aws_session_token"
+aws configure --profile "$session_profile_name" set aws_session_token_expire "$aws_session_token_expire"
+export AWS_PROFILE="$session_profile_name"
 EOF
-  fi
+      ;;
+    env) 
+      if [[ "$set_output" == "true" ]]; then
+        export AWS_ACCESS_KEY_ID="$aws_access_key_id"
+        export AWS_SECRET_ACCESS_KEY="$aws_secret_access_key"
+        export AWS_SESSION_TOKEN="$aws_session_token"
+        export AWS_SESSION_TOKEN_EXPIRE="$aws_session_token_expire"
+      fi
+      cat <<EOF
+export AWS_ACCESS_KEY_ID="$aws_access_key_id"
+export AWS_SECRET_ACCESS_KEY="$aws_secret_access_key"
+export AWS_SESSION_TOKEN="$aws_session_token"
+export AWS_SESSION_TOKEN_EXPIRE="$aws_session_token_expire"
+EOF
+      ;;
+    json) echo "$session_creds_json" ;;
+    *) >&2 echo "invalid output type" && return 1 ;;
+  esac
 }
