@@ -150,7 +150,7 @@ awsenv() {
     && rc=1
   [[ "$rc" -eq 1 ]] && return 1
 
-  local profile="${AWS_DEFAULT_PROFILE:-default}"
+  local profile="${AWS_PROFILE:-default}"
   local add_vars print_exports region
   while [[ -n "$1" ]]; do
     case "$1" in
@@ -176,8 +176,8 @@ EOF
   done
 
   local _tmp
-  [[ "$profile" != "$AWS_DEFAULT_PROFILE" ]] \
-    && export AWS_DEFAULT_PROFILE="$profile"
+  [[ "$profile" != "$AWS_PROFILE" ]] \
+    && export AWS_PROFILE="$profile"
 
   _tmp="$(aws configure get "$profile.region")"
   if [[ -n "$region" && "$_tmp" != "$region" ]]; then
@@ -189,7 +189,8 @@ EOF
   fi
 
   # Cleanup empty variables
-  for v in AWS_DEFAULT_PROFILE \
+  for v in AWS_PROFILE \
+    AWS_DEFAULT_PROFILE \
     AWS_ROLE_ARN \
     AWS_SRC_PROFILE \
     AWS_DEFAULT_REGION \
@@ -488,6 +489,7 @@ EOF
         aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
         aws configure --profile "$session_profile_name" set aws_session_token "$aws_session_token"
         aws configure --profile "$session_profile_name" set aws_session_token_expire "$aws_session_token_expire"
+        [[ -n "$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
         export AWS_PROFILE="$session_profile_name"
       fi
       cat <<EOF
@@ -495,6 +497,7 @@ aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_acce
 aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
 aws configure --profile "$session_profile_name" set aws_session_token "$aws_session_token"
 aws configure --profile "$session_profile_name" set aws_session_token_expire "$aws_session_token_expire"
+[[ -n "\$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
 export AWS_PROFILE="$session_profile_name"
 EOF
       ;;
@@ -504,12 +507,16 @@ EOF
         export AWS_SECRET_ACCESS_KEY="$aws_secret_access_key"
         export AWS_SESSION_TOKEN="$aws_session_token"
         export AWS_SESSION_TOKEN_EXPIRE="$aws_session_token_expire"
+        [[ -n "$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
+        [[ -n "$AWS_PROFILE" ]] && unset AWS_PROFILE
       fi
       cat <<EOF
 export AWS_ACCESS_KEY_ID="$aws_access_key_id"
 export AWS_SECRET_ACCESS_KEY="$aws_secret_access_key"
 export AWS_SESSION_TOKEN="$aws_session_token"
 export AWS_SESSION_TOKEN_EXPIRE="$aws_session_token_expire"
+[[ -n "\$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
+[[ -n "\$AWS_PROFILE" ]] && unset AWS_PROFILE
 EOF
       ;;
     json) echo "$session_creds_json" ;;
