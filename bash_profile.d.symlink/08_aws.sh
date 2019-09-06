@@ -26,7 +26,7 @@ aws_ps1() {
   [[ -r "$_ps1_cache_file" ]] && source "$_ps1_cache_file"
   
   # check profile, if specified
-  local _profile="${AWS_PROFILE:-$AWS_DEFAULT_PROFILE}"
+  local _profile="${AWS_DEFAULT_PROFILE:-$AWS_PROFILE}"
   if [[ -n "$_profile" ]]; then
     if [[ ! -r "$_ps1_cache_file" \
       || -z "$AWS_PS1_CACHE_PROFILE" \
@@ -54,8 +54,15 @@ EOF
   [[ -n "$_ps1_zone" ]] && _ps1_sep1=":"
 
   if [[ -n "$_expire" ]]; then
-    _ps1_ttl="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
-    [[ "$_ps1_ttl" -lt 0 ]] && _ps1_ttl=0
+    local t="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+    if [[ "$t" -gt 0 ]]; then
+      local h=$((t/60/60%24))
+      local m=$((t/60%60))
+      local s=$((t%60))
+      _ps1_ttl="$h:$m:$s"
+    else
+      _ps1_ttl="0:0:0"
+    fi
     [[ -n "$_ps1_ttl" ]] && _ps1_sep2=":"
   else
     _ps1_ttl=""
