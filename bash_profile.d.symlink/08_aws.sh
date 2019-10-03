@@ -2,6 +2,31 @@
 #
 # AWS CLI configurations.
 
+export AWS_PS1_CACHE_FILE="$HOME/.aws/.ps1_cache"
+
+# Sources AWS PS1 cache file
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+aws_ps1_cache_read() {
+  # shellcheck source=/dev/null
+  [[ -r "$AWS_PS1_CACHE_FILE" ]] && source "$AWS_PS1_CACHE_FILE"
+}
+
+# Clears AWS PS1 cache file
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+aws_ps1_cache_clear() {
+  [[ -r "$AWS_PS1_CACHE_FILE" ]] && rm -f "$AWS_PS1_CACHE_FILE"
+}
+
 # Outputs AWS PS1 informations
 # Globals:
 #   None
@@ -20,22 +45,20 @@ aws_ps1() {
 
   [[ -d "$HOME/.aws" ]] && mkdir -p "$HOME/.aws"
   local _ps1_sts _ps1_key _ps1_sep1 _ps1_sep2 _ps1_zone
-  local _ps1_cache_file="$HOME/.aws/.ps1_cache"
-
-  # shellcheck source=/dev/null
-  [[ -r "$_ps1_cache_file" ]] && source "$_ps1_cache_file"
+  aws_ps1_cache_read
   
   # check profile, if specified
   local _profile="${AWS_DEFAULT_PROFILE:-$AWS_PROFILE}"
+  
   if [[ -n "$_profile" ]]; then
-    if [[ ! -r "$_ps1_cache_file" \
+    if [[ ! -r "$AWS_PS1_CACHE_FILE" \
       || -z "$AWS_PS1_CACHE_PROFILE" \
       || "$AWS_PS1_CACHE_PROFILE" != "$_profile" ]]
     then
       AWS_PS1_CACHE_SESSION="$(aws configure get "$_profile.aws_session_token")"
       AWS_PS1_CACHE_EXPIRE="$(aws configure get "$_profile.aws_session_token_expire")"
       AWS_PS1_CACHE_PROFILE="$_profile"
-      cat <<EOF >"$_ps1_cache_file"
+      cat <<EOF >"$AWS_PS1_CACHE_FILE"
 export AWS_PS1_CACHE_PROFILE="$AWS_PS1_CACHE_PROFILE"
 export AWS_PS1_CACHE_SESSION="$AWS_PS1_CACHE_SESSION"
 export AWS_PS1_CACHE_EXPIRE="$AWS_PS1_CACHE_EXPIRE"
@@ -248,6 +271,8 @@ EOF
     done
   fi
 
+  aws_ps1_cache_clear
+
   if [[ "$print_exports" -eq 1 ]]; then
     printf "set +o history\\n"
     env | grep "AWS_" | sed "s/^/export /g"
@@ -332,12 +357,12 @@ EOF
 }
 
 aws-ssh-us() {
-  awsenv --profile "default" --region "us-west-2"
+  awsenv --region "us-west-2"
   aws_ssh_cssh_helper "$@"
 }
 
 aws-ssh-eu() {
-  awsenv --profile "default" --region "eu-west-1"
+  awsenv --region "eu-west-1"
   aws_ssh_cssh_helper "$@"
 }
 
@@ -431,7 +456,7 @@ EOF
 #   Depends on output options
 aws-mfa() {
   local mfa_serial_number mfa_code ttl_seconds session_creds_json 
-  local mfa_name session_profile_name output_type
+  local mfa_name session_profile_name output_type to_profile
   local default_ttl_seconds="28800"
   local default_output_type="profile"
   local set_output="false"
@@ -439,22 +464,27 @@ aws-mfa() {
   ! command -v jq &>/dev/null \
     && echo "jq binary required; please install first" && return 1
   
+  local aws_opts=()
   while [[ -n "$1" ]]; do
     case "$1" in
       -c|--code) shift; mfa_code="$1" ;;
       -o|--output) shift; output_type="$1" ;;
+      -p|--profile) shift; aws_opts+=("--profile" "$1") ;;
       -s|--serial) shift; mfa_serial_number="$1" ;;
       -t|--ttl) shift; ttl_seconds="$1" ;;
       --set) set_output="true" ;;
+      --to-profile) shift; to_profile="$1" ;;
       -h|--help) cat <<EOF
 usage: aws-mfa [options]
 options:
-  -c, --code <mfa>     The  value provided by the MFA device.
-  -o, --output <type>  Output types: json, profile, env (default $default_output_type)
-  -s, --serial <arn>   The identification number of the MFA device that is associated with the IAM user.
-  -t, --ttl <secs>     The duration, in seconds, that the credentials should remain valid. (default $default_ttl_seconds)
-  --set                For 'env' output type, export the environment variables
-                       Fpr 'profile' output type, create the profile and export environment variable
+  -c, --code <mfa>           The  value provided by the MFA device.
+  -o, --output <type>        Output types: json, profile, env (default $default_output_type)
+  -p, --profile <name>       Profile with default credentials
+  -s, --serial <arn>         The identification number of the MFA device that is associated with the IAM user.
+  -t, --ttl <secs>           The duration, in seconds, that the credentials should remain valid. (default $default_ttl_seconds)
+  --set                      For output type = 'env', export the environment variables
+                             For output type = 'profile', create the profile and export environment variable
+  --to-profile <name>        For output type = 'profile', use specified name for for profile (default: sts-<username>)
   -h, --help
 EOF
       return 0
@@ -464,7 +494,7 @@ EOF
 
   # If empty attempt discovery or prompt
   [[ -z "$mfa_serial_number" ]] \
-    && mfa_serial_number="$(aws iam list-mfa-devices | jq -r '.MFADevices[0].SerialNumber')" \
+    && mfa_serial_number="$(aws "${aws_opts[@]}" iam list-mfa-devices | jq -r '.MFADevices[0].SerialNumber')" \
     && echo "# MFA Serial: $mfa_serial_number"
   [[ -z "$mfa_code" ]] \
     && read -r -p "# Enter MFA code: " mfa_code
@@ -476,7 +506,7 @@ EOF
     && >&2 echo "mfa_code not specified or empty." && return 1
 
   # Retrieve session credentials
-  session_creds_json="$(aws sts get-session-token \
+  session_creds_json="$(aws "${aws_opts[@]}" sts get-session-token \
     --serial-number "$mfa_serial_number" \
     --token-code "$mfa_code" \
     --duration-seconds "${ttl_seconds:-$default_ttl_seconds}")" \
@@ -490,7 +520,7 @@ EOF
   case "${output_type:-$default_output_type}" in
     profile)
       mfa_name="${mfa_serial_number##*/}"
-      session_profile_name="sts-${mfa_name}"
+      session_profile_name="${to_profile:-sts-${mfa_name}}"
       if [[ "$set_output" == "true" ]]; then
         aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_access_key_id"
         aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
@@ -498,6 +528,7 @@ EOF
         aws configure --profile "$session_profile_name" set aws_session_token_expire "$aws_session_token_expire"
         [[ -n "$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
         export AWS_PROFILE="$session_profile_name"
+        aws_ps1_cache_clear
       fi
       cat <<EOF
 aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_access_key_id"
@@ -516,6 +547,7 @@ EOF
         export AWS_SESSION_TOKEN_EXPIRE="$aws_session_token_expire"
         [[ -n "$AWS_DEFAULT_PROFILE" ]] && unset AWS_DEFAULT_PROFILE
         [[ -n "$AWS_PROFILE" ]] && unset AWS_PROFILE
+        aws_ps1_cache_clear
       fi
       cat <<EOF
 export AWS_ACCESS_KEY_ID="$aws_access_key_id"

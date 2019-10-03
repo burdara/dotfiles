@@ -105,3 +105,16 @@ EOF
     ;;
   esac
 }
+
+# Fetches certificate information from specified hostname
+# Globals:
+# Arguments:
+#   1: hostname (required)
+# Returns:
+#   Certificate information
+show-cert() {
+  [[ -z "$1" ]] && echo "argument <hostname> missing or empty" && return 1
+  echo \
+    | openssl s_client -showcerts -servername "${2:-$1}" -connect "$1:443" 2>/dev/null \
+    | openssl x509 -inform pem -noout -text
+}
