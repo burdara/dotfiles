@@ -27,7 +27,7 @@ _link_file() {
 # install brew bundle
 [[ "$(uname)" == "Darwin" ]] \
   && command -v brew &>/dev/null \
-  && ( cd "$SELF_DIR" && brew bundle install ; )
+  && { cd "$SELF_DIR" && brew bundle install ; }
 
 # install vim-plug
 curl -sfLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
