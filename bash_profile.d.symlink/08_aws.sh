@@ -57,13 +57,21 @@ aws_ps1() {
     then
       AWS_PS1_CACHE_SESSION="$(aws configure get "$_profile.aws_session_token")"
       AWS_PS1_CACHE_EXPIRE="$(aws configure get "$_profile.aws_session_token_expire")"
+      AWS_PS1_CACHE_SRCP="$(aws configure get "$_profile.source_profile")"
       AWS_PS1_CACHE_PROFILE="$_profile"
+
+      if [[ -z "$AWS_PS1_CACHE_EXPIRE" && -n "$AWS_PS1_CACHE_SRCP" ]]; then
+        AWS_PS1_CACHE_EXPIRE="$(aws configure get "$AWS_PS1_CACHE_SRCP.aws_session_token_expire")"
+      fi
+
       cat <<EOF >"$AWS_PS1_CACHE_FILE"
 export AWS_PS1_CACHE_PROFILE="$AWS_PS1_CACHE_PROFILE"
 export AWS_PS1_CACHE_SESSION="$AWS_PS1_CACHE_SESSION"
 export AWS_PS1_CACHE_EXPIRE="$AWS_PS1_CACHE_EXPIRE"
+export AWS_PS1_CACHE_SRCP="$AWS_PS1_CACHE_SRCP"
 EOF
     fi
+
     _ps1_key="$_profile"
     [[ -n "$AWS_PS1_CACHE_SESSION" ]] && _ps1_sts="*"
     _expire="$AWS_PS1_CACHE_EXPIRE"
