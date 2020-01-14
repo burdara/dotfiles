@@ -97,7 +97,7 @@ cask "spotify"
 cask "vagrant"
 cask "virtualbox"
 cask "visual-studio-code"
-cast "whatsapp"
+cask "whatsapp"
 cask "xquartz"
 
 # re: work laptop, the following are pre-installed
