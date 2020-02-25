@@ -3,6 +3,7 @@
 # AWS CLI configurations.
 
 export AWS_PS1_CACHE_FILE="$HOME/.aws/.ps1_cache"
+export AWS_SDK_LOAD_CONFIG=1
 
 # Sources AWS PS1 cache file
 # Globals:
@@ -85,7 +86,11 @@ EOF
   [[ -n "$_ps1_zone" ]] && _ps1_sep1=":"
 
   if [[ -n "$_expire" ]]; then
-    local t="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      t="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+    else
+      t="$(($(date -d "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+    fi
     if [[ "$t" -gt 0 ]]; then
       local h=$((t/60/60%24))
       local m=$((t/60%60))
@@ -119,7 +124,7 @@ aws_ps1_on() {
 #   [options]:  See usage below
 # Returns:
 #   None
-awsips() {
+aws-ips() {
   local name_filter
   local ip_type="private"
   local include_names="false"
@@ -130,7 +135,7 @@ awsips() {
       --public)       ip_type="public" ;;
       -r|--region)    shift; region="$1" ;;
       -h|--help)      cat <<EOF
-usage: awsips [options] name_filter
+usage: aws-ips [options] name_filter
 options:
   --include-names          Include name with IPs.
   --private                Output private IPs.
@@ -175,7 +180,7 @@ EOF
 #   [options]  See usage below
 # Returns:
 #   None
-awsenv() {
+aws-env() {
   if [[ "$#" -eq 0 ]]; then
     env | grep "AWS_" | sed "s/\(AWS_SECRET_ACCESS_KEY=\).*/\1********/"
     return 0
@@ -198,7 +203,7 @@ awsenv() {
       +v|+vars)      add_vars="plus" ;;
       -v|-vars)      add_vars="minus" ;;
       -h|--help)     cat <<EOF
-usage: awsenv [options]
+usage: aws-env [options]
 options:
   -e, --exports            Displays AWS environment commands for cut & paste.
   -p, --profile <profile>  Sets AWS profile.
@@ -323,11 +328,11 @@ EOF
 
   for pl in $plookup; do
     [[ -n "$ip_data" ]] && ip_data+=" "
-    ip_data+="$(awsips --public $ask "$pl" | xargs)"
+    ip_data+="$(aws-ips --public $ask "$pl" | xargs)"
   done
   for il in $ilookup; do
     [[ -n "$ip_data" ]] && ip_data+=" "
-    ip_data+="$(awsips --private $ask "$il" | xargs)"
+    ip_data+="$(aws-ips --private $ask "$il" | xargs)"
   done
 
   if [[ -n "$ask" ]]; then
@@ -365,12 +370,12 @@ EOF
 }
 
 aws-ssh-us() {
-  awsenv --region "us-west-2"
+  aws-env --region "us-west-2"
   aws_ssh_cssh_helper "$@"
 }
 
 aws-ssh-eu() {
-  awsenv --region "eu-west-1"
+  aws-env --region "eu-west-1"
   aws_ssh_cssh_helper "$@"
 }
 
@@ -384,51 +389,77 @@ aws-ssh-eu() {
 aws-ssm() {
   local usage
   usage=$(cat <<EOF
-usage: ssm [options] [instance-id|ip-address|k8s-node-name]"
+usage: aws-ssm [options] [instance-id|ip-address|k8s-node-name]"
 options:
+  -c, --cluster <name>     EKS cluster name for filtering
+  -d, --doc <name>         Session document name
   -r, --region <region>    AWS region.
   -l, --list               List available instance IDs.
+  -h, --help
 EOF
   )
 
   if [[ ! -x /usr/local/bin/session-manager-plugin ]]; then
     echo "AWS SSM plugin not found; attempting to install"
-    local download_file="/tmp/sessionmanager-bundle.zip"
-    local unzip_dir="/tmp/sessionmanager-bundle"
-
-    # TODO(robbie): add more OS support
+    local download_file
     if [[ "$(uname -s)" == "Darwin" ]]; then
+      download_file="/tmp/sessionmanager-bundle.zip"
+      unzip_dir="/tmp/sessionmanager-bundle"
       curl -sL -o "$download_file" \
         "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip"
-    fi
-
-    if [[ -e "$download_file" ]]; then
-      unzip -d /tmp "$download_file"
-      sudo "$unzip_dir/install" \
-        -i /usr/local/sessionmanagerplugin \
-        -b /usr/local/bin/session-manager-plugin
-      [[ -d "$unzip_dir" ]] && rm -rf "$unzip_dir"
+      if [[ -e "$download_file" ]]; then
+        unzip -d /tmp "$download_file"
+        "$unzip_dir"/install \
+          -i /usr/local/sessionmanagerplugin \
+          -b /usr/local/bin/session-manager-plugin
+        [[ -d "$unzip_dir" ]] && rm -rf "$unzip_dir"
+        rm -f "$download_file"
+      fi
+    elif [[ "$(lsb_release -i -s)" =~ Debian|Ubuntu ]]; then
+      download_file="/tmp/session-manager-plugin.deb"
+      curl -sL -o "$download_file" \
+        "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+      [[ -e "$download_file" ]] && dpkg -i "$download_file"
       rm -f "$download_file"
     fi
   fi
 
   local list=0
   local region="$AWS_DEFAULT_REGION"
-  local input
+  local input cluster_name doc_name
   while [[ -n "$1" ]]; do
     case "$1" in
-      -r|--region) shift; region="$1" ;;
-      -l|--list) list=1 ;;
-      *) input="$1" ;;
+      -c|--cluster) shift; cluster_name="$1" ;;
+      -d|--doc)     shift; doc_name="$1" ;;
+      -r|--region)  shift; region="$1" ;;
+      -l|--list)    list=1 ;;
+      -h|--help)    echo "$usage" && return 0 ;;
+      *)            input="$1" ;;
     esac
     shift
   done
   local region_output="AWS REGION: $region"
 
+  local add_filters=()
+  local add_document=()
+  if [[ -n "$cluster_name" ]]; then
+    add_filters+=(
+      "--filters"
+      "Key=tag-key,Values=kubernetes.io/cluster/$cluster_name"
+    )
+  fi
+  if [[ -n "$doc_name" ]]; then
+    add_document+=(
+      "--document-name"
+      "$doc_name"
+    )
+  fi
+
   [[ -z "$region" ]] && echo "no aws region found or specified" && return 1
+  # shellcheck disable=SC2086
   [[ "$list" -eq 1 ]] \
     && echo "$region_output" \
-    && aws ssm describe-instance-information --region "$region" --output table \
+    && aws ssm describe-instance-information --region "$region" --output table ${add_filters[*]} \
     && return 0
   [[ -z "$input" ]] && echo "$usage" && return 0
 
@@ -437,7 +468,8 @@ EOF
   if [[ "$input" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3} ]] \
     || [[ "$input" =~ ip-[0-9]{1,3}-[0-9]{1,3}-[0-9]{1,3}-[0-9]{1,3}[a-z0-9.]* ]] \
     || [[ "$input" =~ i-[a-z0-9]+ ]]; then
-    target="$(aws ssm describe-instance-information --region "$region" --output text \
+    # shellcheck disable=SC2086
+    target="$(aws ssm describe-instance-information --region "$region" --output text ${add_filters[*]} \
       | grep "$input" | awk '{print $5}')"
   else
     echo -e "invalid argument\n$usage" && return 1
@@ -452,7 +484,8 @@ EOF
     && echo "multiple instance-ids found for $input; please try --list option" \
     && return 1
 
-  aws ssm start-session --region "$region" --target "$target"
+  # shellcheck disable=SC2086
+  aws ssm start-session --region "$region" --target "$target" ${add_document[*]}
 }
 
 # AWS MFA wrapper
