@@ -3,6 +3,7 @@
 # Kubernetes configurations
 
 export KUBECONFIG_HOME="$HOME/.kube"
+export KUBE_EDITOR="vim -u 'NONE'"
 
 # Install Kubernetes PS1 scripts.
 # Globals:
@@ -46,4 +47,3 @@ _source_kube_configs() {
 [[ ! -d "$KUBECONFIG_HOME" ]] && mkdir -p "$KUBECONFIG_HOME"
 _install_k8s_ps1 && unset _install_k8s_ps1
 _source_kube_configs && unset _source_kube_configs
-export KUBE_EDITOR="vim -u 'NONE'"

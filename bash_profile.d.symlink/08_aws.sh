@@ -7,7 +7,7 @@ export AWS_SDK_LOAD_CONFIG=1
 
 # Sources AWS PS1 cache file
 # Globals:
-#   None
+#   AWS_PS1_CACHE_FILE
 # Arguments:
 #   None
 # Returns:
@@ -19,7 +19,7 @@ aws_ps1_cache_read() {
 
 # Clears AWS PS1 cache file
 # Globals:
-#   None
+#   AWS_PS1_CACHE_FILE
 # Arguments:
 #   None
 # Returns:
@@ -30,11 +30,21 @@ aws_ps1_cache_clear() {
 
 # Outputs AWS PS1 informations
 # Globals:
-#   None
+#   AWS_ACCESS_KEY_ID         Access key
+#   AWS_DEFAULT_PROFILE       Default region
+#   AWS_PS1                   Whether PS1 is enabled
+#   AWS_PS1_CACHE_EXPIRE      Cache of session expiration timestamp
+#   AWS_PS1_CACHE_FILE        Cache file
+#   AWS_PS1_CACHE_PROFILE     Cache of currnet profile
+#   AWS_PS1_CACHE_SESSION     Cache of session token
+#   AWS_PS1_CACHE_SRCP        Cache of source profile
+#   AWS_SECRET_ACCESS_KEY     Secret access key
+#   AWS_SESSION_TOKEN         Session token
+#   AWS_SESSION_TOKEN_EXPIRE  Session token expiration timestamp
 # Arguments:
 #   None
 # Returns:
-#   PS1 informations
+#   AWS PS1 information and sets AWS_PS1_CACHE_* envrionment variables
 aws_ps1() {
   [[ "${AWS_PS1:-on}" == "off" ]] && return 0
   local _clr_red _clr_green _clr_cyan _clr_magenta _clr_reset _expire
@@ -85,11 +95,18 @@ EOF
   [[ -n "$AWS_DEFAULT_REGION" ]] && _ps1_zone="$AWS_DEFAULT_REGION"
   [[ -n "$_ps1_zone" ]] && _ps1_sep1=":"
 
+  local _tmp_date _tmp_expire
   if [[ -n "$_expire" ]]; then
+    case "$_expire" in
+      *Z)    _tmp_expire="${_expire/Z/+0000}" ;;
+      *00:00) _tmp_expire="${_expire/00:00/0000}" ;;
+    esac
     if [[ "$(uname -s)" == "Darwin" ]]; then
-      t="$(($(date -j -f '%Y-%m-%dT%H:%M:%S%z' "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+      _tmp_date="$(date -j -f '%Y-%m-%dT%H:%M:%S%z' "$_tmp_expire" +"%s" 2>/dev/null)"
+      t="$((_tmp_date - $(date -u +"%s")))"
     else
-      t="$(($(date -d "${_expire/Z/+0000}" +"%s")-$(date -u +"%s")))"
+      _tmp_date="$(date -d "$_tmp_expire" +"%s" 2>/dev/null)"
+      t="$((_tmp_date - $(date -u +"%s")))"
     fi
     if [[ "$t" -gt 0 ]]; then
       local h=$((t/60/60%24))
@@ -97,7 +114,7 @@ EOF
       local s=$((t%60))
       _ps1_ttl="$h:$m:$s"
     else
-      _ps1_ttl="0:0:0"
+      _ps1_ttl="0"
     fi
     [[ -n "$_ps1_ttl" ]] && _ps1_sep2=":"
   else
@@ -108,10 +125,24 @@ EOF
     && echo "(${_clr_magenta}aws${_clr_reset}|${_clr_green}${_ps1_key}${_clr_reset}${_clr_red}${_ps1_sts}${_clr_reset}${_ps1_sep1}${_clr_cyan}${_ps1_zone}${_clr_reset}${_ps1_sep2}${_clr_red}${_ps1_ttl}${_clr_reset})"
 }
 
+# Disables aws_ps1 output
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   Sets environment variable AWS_PS1
 aws_ps1_off() {
   export AWS_PS1="off"
 }
 
+# Enables aws_ps1 output
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   Sets environment variable AWS_PS1
 aws_ps1_on() {
   export AWS_PS1="on"
 }
@@ -120,50 +151,50 @@ aws_ps1_on() {
 # Globals:
 #   None
 # Arguments:
-#   1: name filter
-#   [options]:  See usage below
+#   See usage
 # Returns:
 #   None
 aws-ips() {
+  local usage
+  usage=$(cat <<EOF
+usage: aws-ips [options] [name_filter]
+arguments:
+  name_filter              filter text for AWS CLI (optional)
+options:
+  --include-names          Include name with IPs
+  --private                Output private IPs
+  --public                 Output public IPs
+  -r, --region <region>    Sets AWS region
+  -h, --help               Prints usage
+EOF
+)
   local name_filter
   local ip_type="private"
   local include_names="false"
   while [[ -n "$1" ]]; do
     case "$1" in
       --include-names) include_names="true" ;;
-      --private)      ip_type="private" ;;
-      --public)       ip_type="public" ;;
-      -r|--region)    shift; region="$1" ;;
-      -h|--help)      cat <<EOF
-usage: aws-ips [options] name_filter
-options:
-  --include-names          Include name with IPs.
-  --private                Output private IPs.
-  --public                 Output public IPs.
-  -r, --region <region>    Sets AWS region.
-  -h, --help               Prints usage.
-dependencies:
-  aws (binary)             AWS CLI
-  jq  (binary)             JSON query
-EOF
-        return 0
-        ;;
-      *) name_filter="$1"
+      --private)       ip_type="private" ;;
+      --public)        ip_type="public" ;;
+      -r|--region)     shift; region="$1" ;;
+      -h|--help)       echo "$usage" && return 0 ;;
+      *)               name_filter="$1" ;;
     esac
     shift
   done
   
   local rc
   ! command -v aws &>/dev/null 2>&1 \
-    && printf "aws cli binary not found" && rc=1
+    && printf "aws cli binary not found\n" && rc=1
   ! command -v jq &>/dev/null 2>&1 \
-    && printf "jq binary not found" && rc=1
+    && printf "jq binary not found\n" && rc=1
   [[ "$rc" -eq 1 ]] && return 1
 
   local field="PrivateIpAddress"
   [[ "$ip_type" == "public" ]] && field="PublicIpAddress"
   local jq_query=".Reservations[].Instances[].$field"
-  [[ "$include_names" == "true" ]] && jq_query=".Reservations[].Instances[] | (.Tags[] | select(.Key == \"Name\").Value) +\"~\"+ .$field"
+  [[ "$include_names" == "true" ]] \
+    && jq_query=".Reservations[].Instances[] | (.Tags[] | select(.Key == \"Name\").Value) +\"~\"+ .$field"
   [[ -n "$region" ]] && local region_opt="--region $region"
   
   # shellcheck disable=2086
@@ -175,14 +206,35 @@ EOF
 
 # Set aws environemnt variables
 # Globals:
-#   None
+#   AWS_ACCESS_KEY_ID
+#   AWS_DEFAULT_PROFILE
+#   AWS_DEFAULT_REGION
+#   AWS_PROFILE
+#   AWS_ROLE_ARN
+#   AWS_SRC_PROFILE   
+#   AWS_SECRET_ACCESS_KEY
+#   AWS_SESSION_TOKEN
+#   AWS_SESSION_TOKEN_EXPIRE
 # Arguments:
-#   [options]  See usage below
+#   See usage
 # Returns:
 #   None
 aws-env() {
+  local usage
+  usage=$(cat <<EOF
+usage: aws-env [options]
+options:
+  -e, --exports            Displays AWS environment commands for cut & paste.
+  -p, --profile <profile>  Sets AWS profile.
+  -r, --region <region>    Sets AWS region.
+  +v, +vars                Set extra AWS environment variables.
+  -v, -vars                Cleanup extra AWS environment variables.
+  -h, --help               Prints usage.
+EOF
+)
   if [[ "$#" -eq 0 ]]; then
-    env | grep "AWS_" | sed "s/\(AWS_SECRET_ACCESS_KEY=\).*/\1********/"
+    env | grep "AWS_" | sed -e "s/\(AWS_SECRET_ACCESS_KEY=\).*/\1********/" \
+      -e "s/\(AWS_SESSION_TOKEN=\).*/\1********/"
     return 0
   fi
   local rc
@@ -202,18 +254,7 @@ aws-env() {
       -r|--region)   shift; region="$1" ;;
       +v|+vars)      add_vars="plus" ;;
       -v|-vars)      add_vars="minus" ;;
-      -h|--help)     cat <<EOF
-usage: aws-env [options]
-options:
-  -e, --exports            Displays AWS environment commands for cut & paste.
-  -p, --profile <profile>  Sets AWS profile.
-  -r, --region <region>    Sets AWS region.
-  +v, +vars                Set extra AWS environment variables.
-  -v, -vars                Cleanup extra AWS environment variables.
-  -h, --help               Prints usage.
-EOF
-        return 0
-        ;;
+      -h|--help)     echo "$usage" && return 0 ;;
     esac
     shift
   done
@@ -246,6 +287,10 @@ EOF
   done
   
   if [[ -n "$add_vars" && "$add_vars" == "plus" ]]; then
+    # Save profile and unset
+    export _AWS_PROFILE=$AWS_PROFILE
+    unset AWS_PROFILE
+
     # role arn
     _tmp="$(aws configure get "$profile.role_arn")"
     [[ -n "$_tmp" && -z $AWS_ROLE_ARN ]] \
@@ -276,12 +321,15 @@ EOF
       && export AWS_SESSION_TOKEN_EXPIRE="$_tmp"
 
   elif [[ -n "$add_vars" && "$add_vars" == "minus" ]]; then
-    for e in $(env | grep "AWS_" | awk -F= '{print $1}' | xargs); do
+    for e in $(env | grep -e "^AWS_" | awk -F= '{print $1}' | xargs); do
       case "$e" in
-        AWS_DEFAULT_PROFILE|AWS_DEFAULT_REGION) : ;;
+        AWS_DEFAULT_PROFILE|AWS_DEFAULT_REGION|AWS_SDK_LOAD_CONFIG) : ;;
         *) unset "$e" ;;
       esac
     done
+    [[ -n "$_AWS_PROFILE" ]] \
+      && export AWS_PROFILE="$_AWS_PROFILE" \
+      && unset _AWS_PROFILE
   fi
 
   aws_ps1_cache_clear
