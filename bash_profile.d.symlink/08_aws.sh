@@ -273,7 +273,7 @@ EOF
   fi
 
   # Cleanup empty variables
-  for v in AWS_PROFILE \
+  for v in \
     AWS_DEFAULT_PROFILE \
     AWS_ROLE_ARN \
     AWS_SRC_PROFILE \
