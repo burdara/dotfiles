@@ -417,16 +417,6 @@ EOF
   sshw $args
 }
 
-aws-ssh-us() {
-  aws-env --region "us-west-2"
-  aws_ssh_cssh_helper "$@"
-}
-
-aws-ssh-eu() {
-  aws-env --region "eu-west-1"
-  aws_ssh_cssh_helper "$@"
-}
-
 # AWS ssm wrapper function.
 # Globals:
 #   None
@@ -549,6 +539,7 @@ aws-mfa() {
   local default_ttl_seconds="28800"
   local default_output_type="profile"
   local set_output="false"
+  local print_output="false"
 
   ! command -v jq &>/dev/null \
     && echo "jq binary required; please install first" && return 1
@@ -562,6 +553,7 @@ aws-mfa() {
       -s|--serial) shift; mfa_serial_number="$1" ;;
       -t|--ttl) shift; ttl_seconds="$1" ;;
       --set) set_output="true" ;;
+      --print) print_output="true" ;;
       --to-profile) shift; to_profile="$1" ;;
       -h|--help) cat <<EOF
 usage: aws-mfa [options]
@@ -573,6 +565,7 @@ options:
   -t, --ttl <secs>           The duration, in seconds, that the credentials should remain valid. (default $default_ttl_seconds)
   --set                      For output type = 'env', export the environment variables
                              For output type = 'profile', create the profile and export environment variable
+  --print                    Whether to display commands executed
   --to-profile <name>        For output type = 'profile', use specified name for for profile (default: sts-<username>)
   -h, --help
 EOF
@@ -619,7 +612,7 @@ EOF
         export AWS_PROFILE="$session_profile_name"
         aws_ps1_cache_clear
       fi
-      cat <<EOF
+      [[ "$print_output" == "true" ]] && cat <<EOF
 aws configure --profile "$session_profile_name" set aws_access_key_id "$aws_access_key_id"
 aws configure --profile "$session_profile_name" set aws_secret_access_key "$aws_secret_access_key"
 aws configure --profile "$session_profile_name" set aws_session_token "$aws_session_token"
@@ -638,7 +631,7 @@ EOF
         [[ -n "$AWS_PROFILE" ]] && unset AWS_PROFILE
         aws_ps1_cache_clear
       fi
-      cat <<EOF
+      [[ "$print_output" == "true" ]] && cat <<EOF
 export AWS_ACCESS_KEY_ID="$aws_access_key_id"
 export AWS_SECRET_ACCESS_KEY="$aws_secret_access_key"
 export AWS_SESSION_TOKEN="$aws_session_token"

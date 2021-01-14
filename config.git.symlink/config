@@ -25,6 +25,8 @@
   excludesfile = ~/.config/git/ignore
 [include]
   path = ~/.config/git/config.custom
+[init]
+  defaultBranch = main
 [hub]
   protocol = https
 [merge]
@@ -33,3 +35,7 @@
   default = simple
 [diff "sopsdiffer"]
 	textconv = sops -d
+[pull]
+  # rebase = false # merge (the default strategy)
+  rebase = true    # rebase
+  # ff = only      # fast-forward only

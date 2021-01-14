@@ -1,2 +1,5 @@
 # Custom Git config
-.git.symlink/config.custom*
+config.git.symlink/config.custom*
+
+# Custom bash_profile.d
+bash_profile.d.symlink/*_custom.sh

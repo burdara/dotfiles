@@ -45,5 +45,9 @@ _source_kube_configs() {
 }
 
 [[ ! -d "$KUBECONFIG_HOME" ]] && mkdir -p "$KUBECONFIG_HOME"
+
 _install_k8s_ps1 && unset _install_k8s_ps1
 _source_kube_configs && unset _source_kube_configs
+
+# krew binaries
+[[ -d "$HOME/.krew/bin" ]] && add_paths "${HOME}/.krew/bin"

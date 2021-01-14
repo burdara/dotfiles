@@ -10,10 +10,11 @@
 # Returns:
 #   None
 _source_bash_profiles() {
-  local libs lib
+  local alibs libs lib
   if [[ -d "$HOME/.bash_profile.d" ]]; then
-    libs="$(find -L "$HOME/.bash_profile.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)"
-    for lib in $libs; do
+    libs=$(find -L "$HOME/.bash_profile.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)
+    IFS=' ' read -ra alibs <<< "$libs"
+    for lib in "${alibs[@]}"; do
       # shellcheck source=/dev/null
       [[ -r "$lib" ]] && source "$lib"
     done
