@@ -3,12 +3,9 @@
 # Git configuration and setup
 
 # Setup git aliases
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _setup_git_aliases() {
   alias ga='git add'
   alias gl='git pull'
@@ -23,12 +20,9 @@ _setup_git_aliases() {
 }
 
 # Setup user specific gitconfig file
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _setup_git_config() {
   local config="$HOME/.config/git/config.custom"
 

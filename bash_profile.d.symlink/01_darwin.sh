@@ -3,12 +3,9 @@
 # Mac (darwin) specific configurations
 
 # Source Homebrew's bash completion links
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _source_brew_bash_complete() {
   local brew_bash_completion_dir
   brew_bash_completion_dir="$(brew --prefix)/etc/bash_completion.d"
@@ -29,12 +26,9 @@ _source_brew_bash_complete() {
 }
 
 # Creates Mac related aliases
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _setup_darwin_aliases() {
   # md5sum
   alias md5="md5 -r"

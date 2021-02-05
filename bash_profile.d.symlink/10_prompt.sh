@@ -13,18 +13,18 @@
 #   export GIT_PS1_SHOWCOLORHINTS="true"
 #   PS1+="\$(__git_ps1)"
 # fi
-
+#
 # command -v aws_ps1 &>/dev/null \
 #   && PS1+=" \$(aws_ps1)"
-
+#
 # command -v kube_ps1 &>/dev/null \
 #   && PS1+=" \$(kube_ps1)"
-
+#
 # PS1+=" [\t]\n\$ "
-
+#
 # type kube_ps1 &>/dev/null \
 #   && LP_PS1_POSTFIX+="\$(kube_ps1)"
-
+#
 # ## Add a new line
 # LP_PS1_POSTFIX+="\n$(tput bold || echo "\e[1m")>$(tput sgr0 || echo "\e[0m") "
 

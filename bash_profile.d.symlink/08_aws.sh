@@ -8,10 +8,8 @@ export AWS_SDK_LOAD_CONFIG=1
 # Sources AWS PS1 cache file
 # Globals:
 #   AWS_PS1_CACHE_FILE
-# Arguments:
-#   None
-# Returns:
-#   None
+# Arguments: None
+# Returns: None
 aws_ps1_cache_read() {
   # shellcheck source=/dev/null
   [[ -r "$AWS_PS1_CACHE_FILE" ]] && source "$AWS_PS1_CACHE_FILE"
@@ -20,10 +18,8 @@ aws_ps1_cache_read() {
 # Clears AWS PS1 cache file
 # Globals:
 #   AWS_PS1_CACHE_FILE
-# Arguments:
-#   None
-# Returns:
-#   None
+# Arguments: None
+# Returns: None
 aws_ps1_cache_clear() {
   [[ -r "$AWS_PS1_CACHE_FILE" ]] && rm -f "$AWS_PS1_CACHE_FILE"
 }
@@ -41,8 +37,7 @@ aws_ps1_cache_clear() {
 #   AWS_SECRET_ACCESS_KEY     Secret access key
 #   AWS_SESSION_TOKEN         Session token
 #   AWS_SESSION_TOKEN_EXPIRE  Session token expiration timestamp
-# Arguments:
-#   None
+# Arguments: None
 # Returns:
 #   AWS PS1 information and sets AWS_PS1_CACHE_* envrionment variables
 aws_ps1() {
@@ -99,7 +94,7 @@ EOF
   if [[ -n "$_expire" ]]; then
     case "$_expire" in
       *Z)    _tmp_expire="${_expire/Z/+0000}" ;;
-      *00:00) _tmp_expire="${_expire/00:00/0000}" ;;
+      *00:00) _tmp_expire="${_expire/+00:00/+0000}" ;;
     esac
     if [[ "$(uname -s)" == "Darwin" ]]; then
       _tmp_date="$(date -j -f '%Y-%m-%dT%H:%M:%S%z' "$_tmp_expire" +"%s" 2>/dev/null)"
@@ -126,10 +121,8 @@ EOF
 }
 
 # Disables aws_ps1 output
-# Globals:
-#   None
-# Arguments:
-#   None
+# Globals: None
+# Arguments: None
 # Returns:
 #   Sets environment variable AWS_PS1
 aws_ps1_off() {
@@ -137,10 +130,8 @@ aws_ps1_off() {
 }
 
 # Enables aws_ps1 output
-# Globals:
-#   None
-# Arguments:
-#   None
+# Globals: None
+# Arguments: None
 # Returns:
 #   Sets environment variable AWS_PS1
 aws_ps1_on() {
@@ -148,12 +139,10 @@ aws_ps1_on() {
 }
 
 # Set aws environemnt variables
-# Globals:
-#   None
+# Globals: None
 # Arguments:
 #   See usage
-# Returns:
-#   None
+# Returns: None
 aws-ips() {
   local usage
   usage=$(cat <<EOF
@@ -217,8 +206,7 @@ EOF
 #   AWS_SESSION_TOKEN_EXPIRE
 # Arguments:
 #   See usage
-# Returns:
-#   None
+# Returns: None
 aws-env() {
   local usage
   usage=$(cat <<EOF
@@ -341,6 +329,11 @@ EOF
   fi
 }
 
+# Set aws environemnt variables
+# Globals: None
+# Arguments:
+#   See usage
+# Returns: None
 aws_ssh_cssh_helper() {
   local ipa ips args ip_data plookup ilookup ask region user_input tmp_ips
   while [[ -n "$1" ]]; do
@@ -419,7 +412,7 @@ EOF
 
 # AWS ssm wrapper function.
 # Globals:
-#   None
+#   AWS_DEFAULT_REGION
 # Arguments:
 #   @: Options and commands. Refer to usage.
 # Returns:

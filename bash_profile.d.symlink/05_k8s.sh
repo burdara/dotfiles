@@ -6,12 +6,9 @@ export KUBECONFIG_HOME="$HOME/.kube"
 export KUBE_EDITOR="vim -u 'NONE'"
 
 # Install Kubernetes PS1 scripts.
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _install_k8s_ps1() {
   if [[ "$(uname)" == "Darwin" ]]; then
     local _tmp_kube_ps1_file
@@ -29,12 +26,9 @@ _install_k8s_ps1() {
 }
 
 # Sources kubernetes configs files, if present.
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _source_kube_configs() {
   local kubecfgs
   KUBECONFIG="$KUBECONFIG_HOME/config"

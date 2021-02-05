@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
 #
 # Installs dotfiles
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 
 readonly SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Backups, if exists, and creates symbolic link of file.
-# Globals:
-#   None
+# Globals: None
 # Arguments:
 #   1: destination file
 #   2: source file
-# Returns:
-#   None
+# Returns: None
 _link_file() {
   [[ -e "$1" && ! -L "$1" ]] && mv "$1" "$1.$(date '+%Y%m%d%H%M%S')"
   [[ -L "$1" ]] && rm -f "$1"

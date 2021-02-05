@@ -8,8 +8,7 @@
 #   CSSH_CMD: Cluster SSH command (default: csshx)
 # Arguments:
 #   [options]:  See usage below
-# Returns:
-#   None
+# Returns: None
 sshw() {
   local user="robbie"
   local options="-o StrictHostKeyChecking=no"

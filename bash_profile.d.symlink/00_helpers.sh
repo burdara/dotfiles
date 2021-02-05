@@ -4,12 +4,10 @@
 
 # Enable/Disable shell's extglob option
 # Refer to https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html
-# Globals:
-#   None
+# Globals: None
 # Arguments:
 #   1: on/off/""
-# Returns:
-#   None
+# Returns: None
 extglob() {
   local usage="usage: extglob [on|off]"
   case "$1" in
@@ -21,12 +19,9 @@ extglob() {
 }
 
 # Flush DNS. Currently darwin only.
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 dnsflush() {
   [[ "$(uname)" == "Darwin" ]] \
     && sudo dscacheutil -flushcache \
@@ -34,12 +29,9 @@ dnsflush() {
 }
 
 # Disk Usage by Folder
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 duf() {
   ! command -v perl &>/dev/null && echo "perl binary not found" && return 1
   local perl_cmds
@@ -62,13 +54,11 @@ EOF
 
 # Set command line http(s) proxy environment variables
 # i.e http_proxy, https_proxy, HTTP_PROXY, HTTPS_PROXY
-# Globals:
-#   None
+# Globals: None
 # Arguments:
 #   1: set or unset (required)
 #   @: options - see usage
-# Returns:
-#   None
+# Returns: None
 set_web_proxy() {
   local usage action
   usage=$(cat <<EOF
@@ -139,7 +129,7 @@ EOF
 }
 
 # Fetches certificate information from specified hostname
-# Globals:
+# Globals: None
 # Arguments:
 #   1: hostname (required)
 # Returns:
