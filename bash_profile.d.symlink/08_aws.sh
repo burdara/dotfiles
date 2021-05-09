@@ -151,6 +151,7 @@ arguments:
   name_filter              filter text for AWS CLI (optional)
 options:
   --include-names          Include name with IPs
+  --no-name                Include IPs without name tags
   --private                Output private IPs
   --public                 Output public IPs
   -r, --region <region>    Sets AWS region
@@ -160,9 +161,11 @@ EOF
   local name_filter
   local ip_type="private"
   local include_names="false"
+  local no_name="false"
   while [[ -n "$1" ]]; do
     case "$1" in
       --include-names) include_names="true" ;;
+      --no-name)       no_name="true" ;;
       --private)       ip_type="private" ;;
       --public)        ip_type="public" ;;
       -r|--region)     shift; region="$1" ;;
@@ -186,10 +189,13 @@ EOF
     && jq_query=".Reservations[].Instances[] | (.Tags[] | select(.Key == \"Name\").Value) +\"~\"+ .$field"
   [[ -n "$region" ]] && local region_opt="--region $region"
   
+  local name_filter_arg="Name=tag:Name,Values=*$name_filter*"
+  [[ "$no_name" == "true" ]] && unset name_filter_arg
+
   # shellcheck disable=2086
   aws ec2 describe-instances $region_opt --filters \
     "Name=instance-state-name,Values=running" \
-    "Name=tag:Name,Values=*$name_filter*" \
+    $name_filter_arg \
       | jq -r "$jq_query"
 }
 

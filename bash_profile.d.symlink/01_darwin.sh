@@ -38,9 +38,35 @@ _setup_darwin_aliases() {
   alias crontab="VIM_CRONTAB=true crontab"
 }
 
+# adds iterm auto dark mode script
+# Globals: None
+# Arguments: None
+# Returns: None
+_setup_iterm_color() {
+  # https://gist.github.com/jamesmacfie/2061023e5365e8b6bfbbc20792ac90f8
+  local base_dir="$HOME/Library/ApplicationSupport/iTerm2"
+  local src="$HOME/.bash_profile.d/files/iterm-auto_dark_mode.py"
+  local dst="$base_dir/Scripts/AutoLaunch/auto_dark_mode.py"
+  if [[ -d "$base_dir" ]]; then
+    [[ ! -d "$base_dir/Scripts/AutoLaunch" ]] \
+      && mkdir -p "$base_dir/Scripts/AutoLaunch"
+    [[ -e "$src" ]] && cp -p "$src" "$dst"
+  fi
+
+}
+
+# kills VDC Assistant, in a attempt to fix camera issus
+# Globals: None
+# Arguments: None
+# Returns: None
+kill_vdca() {
+  sudo killall VDCAssistant
+}
+
 if [[ "$(uname)" == "Darwin" ]]; then
   _source_brew_bash_complete && unset _source_brew_bash_complete
   _setup_darwin_aliases && unset _setup_darwin_aliases
+  _setup_iterm_color && unset _setup_iterm_color
   
   # custom paths
   [[ -d "$(brew --prefix)/Cellar/gnu-getopt" ]] \

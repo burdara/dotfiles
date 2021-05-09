@@ -51,6 +51,8 @@ export LP_ENABLE_SUDO=1
 export LP_ENABLE_TIME=1
 export LP_ENABLE_TITLE=0
 export LP_ENABLE_RUNTIME=1
+# custom color
+export LP_COLOR_PATH_SEPARATOR="\033[1;33m"
 
 export LP_PS1_FILE="$HOME/.liquid.ps1"
 # shellcheck source=/dev/null
