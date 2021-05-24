@@ -1,4 +1,4 @@
 #!/bin/sh
-#
 # Overides vimrc file to prevent potential issues with components.
+# shellcheck disable=2068
 vim -u 'NONE' $@

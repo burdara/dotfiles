@@ -41,7 +41,7 @@ LP_PS1="${LP_PS1}${LP_PWD}${LP_BRACKET_CLOSE}${LP_VENV}${LP_PROXY}"
 LP_PS1="${LP_PS1}${LP_VCS}"
 
 LP_PS1_POSTFIX=""
-command -v "aws_ps1" &>/dev/null && LP_PS1_POSTFIX+=$(_lp_sr "$(aws_ps1)")
+command -v "aws-ps1" &>/dev/null && LP_PS1_POSTFIX+=$(_lp_sr "$(aws-ps1)")
 command -v "kube_ps1" &>/dev/null && LP_PS1_POSTFIX+=$(_lp_sr "$(kube_ps1)")
 LP_PS1_POSTFIX+="\n\$ "
 

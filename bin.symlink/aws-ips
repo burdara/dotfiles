@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# Set aws environemnt variables
+# Globals: None
+# Arguments:
+#   [options]: refer to usage
+# Returns:
+#   IP information from AWS
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+
+# Parses usage comments and outputs to stdout
+# Globals:
+#   me: this script path
+# Arguments: None
+# Returns:
+#   Scripts usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options] <args>
+arguments: $(echo ""; grep -E '#[ ]*help\(a\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(a):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+# Print error to stderr
+# Globals: None
+# Arguments:
+#   *: error message
+# Returns:
+#   Outputs error to stderr
+err() {
+  >&2 echo "[error] $*"
+}
+
+name_filter=()
+include_private="true"
+include_public="false"
+include_names="false"
+while [[ -n "$1" ]]; do
+  case "$1" in
+    # help(o): -n, --include-names @ Include name tag, if set
+    -n|--include-names) include_names="true" ;;
+    # help(o): -i, --private @ Output private IPs
+    -i|--private)       include_private="true" ;;
+    # help(o): -p, --public @ Output public IPs
+    -p|--public)        include_public="true" ;;
+    # help(o): -r, --region @ AWS region
+    -r|--region)        shift; region="$1" ;;
+    # help(o): -h, --help @
+    -h|--help)          print_usage && exit 0 ;;
+    # help(a): <input> @ input filter text for AWS CLI
+    *)                  input+=("$1") ;;
+  esac
+  shift
+done
+  
+! command -v aws &>/dev/null 2>&1 \
+&& err "aws cli binary not found\n" && rc=1
+! command -v jq &>/dev/null 2>&1 \
+&& err "jq binary not found\n" && rc=1
+[[ "$rc" -eq 1 ]] && exit 1
+
+fields=()
+[[ "$include_private" == "true" ]] && fields+=(".PrivateIpAddress" "+\"~\"+")
+[[ "$include_public" == "true" ]] && fields+=(".PublicIpAddress" "+\"~\"+")
+jq_query=".Reservations[].Instances[] | ${fields[*]}"
+[[ "$include_names" == "true" ]] \
+  && jq_query=".Reservations[].Instances[] | ${fields[*]} if .Tags[].Key == \"Name\" then select(.Tags[].Key == \"Name\").Value else empty end)"
+[[ -n "$region" ]] && region_opt=("--region" "$region")
+
+name_filter_arg=()
+for filter in "${name_filter[@]}"; do
+  name_filter_arg+=("Name=tag:Name,Values=*$filter*")
+done
+
+# shellcheck disable=2086
+aws ec2 describe-instances "${region_opt[@]}"  \
+  --filters "Name=instance-state-name,Values=running" \
+  "${name_filter_arg[@]}" | jq -r "$jq_query"

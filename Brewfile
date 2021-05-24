@@ -1,114 +1,147 @@
-tap "aws/tap"
 tap "caskroom/cask"
-tap "chef/chef"
-tap "derailed/k9s"
-tap "derailed/popeye"
-tap "johanhaleby/kubetail"
-tap "parera10/csshx"
-tap "warrensbox/tap"
 
-brew "ansible"
-brew "aquasecurity/trivy/trivy"
-brew "autoconf"
+# 1password
+cask "1password-cli"
+cask "1password"
+
+# aws
+tap "aws/tap"
 brew "awscli"
 brew "aws-sam-cli"
-brew "aws-iam-authenticator"
+brew "session-manager-plugin"
+
+# bash / shell
 brew "bash"
 brew "bash-completion@2"
 brew "bats"
-brew "cfssl"
-brew "cmake"
-brew "consul"
-brew "coreutils"
-brew "dep"
-brew "docker"
-brew "git"
-brew "gnu-getopt"
-brew "gnupg"
-brew "go"
-brew "graphviz"
-brew "helmfile"
-brew "hadolint"
-brew "ipcalc"
-brew "istioctl"
 brew "jq"
-brew "jsonnet"
+brew "readline"
+brew "tree"
+brew "watch"
+brew "yq"
+
+# build tools
+brew "autoconf"
+brew "cmake"
+brew "coreutils"
+brew "dep" # golang dep
+brew "git"
+brew "maven"
+
+# browsers
+cask "firefox"
+#cask "google-chrome"
+
+# checks
+brew "shellcheck"
+
+# communications
+cask "whatsapp"
+#cask "slack"
+
+# compression
+brew "unrar"
+
+# configuration management
+brew "ansible"
+
+# data
+cask "mongodb-compass"
+brew "redis"
+
+# docker
+brew "docker"
+cask "docker"
+brew "hadolint"
+cask "kitematic"
+
+# editors
+cask "atom"
+cask "visual-studio-code"
+
+# encryption / tls
+brew "cfssl"
+brew "gnupg"
+cask "keybase"
+brew "openssl"
+brew "sops"
+brew "sslyze"
+
+# google cloud sdk
+cask "google-cloud-sdk"
+
+# inspec
+tap "chef/chef"
+cask "inspec"
+
+# java
+tap "adoptopenjdk/openjdk"
+cask "java"
+
+# helm
+brew "helmfile"
+brew "gnu-getopt"
+
+# kubernetes
+tap "derailed/k9s"
 brew "k9s"
-brew "kops"
-brew "ksonnet/tap/ks"
 brew "kube-ps1"
 brew "kubectx"
 brew "kubernetes-cli"
 brew "kubernetes-helm"
-brew "kubeseal"
+tap "johanhaleby/kubetail"
 brew "kubetail"
 brew "kustomize"
+brew "istioctl"
+tap "derailed/popeye"
+brew "popeye"
+brew "stern"
+
+# languages / dev environments
+brew "go"
+brew "jsonnet"
 brew "lua"
-brew "maven"
-brew "nmap"
 brew "node-build"
 brew "nodenv"
-brew "openssl"
-brew "packer"
-brew "parera10/csshx/csshx"
 brew "pipenv"
-brew "popeye"
 brew "pyenv"
-brew "qt"
 brew "rbenv"
-brew "readline"
-brew "redis"
 brew "rustup-init"
+
+# multiplexer
 brew "screen"
-brew "shellcheck"
-brew "ship"
-brew "sops"
-brew "sslyze"
-brew "stern"
-brew "tcpdump"
-brew "terminal-notifier"
-brew "terraform"
-brew "terraform-docs"
 brew "tmux"
-brew "tree"
-brew "unrar"
-brew "vault"
-brew "warrensbox/tap/tfswitch"
-brew "watch"
-brew "wireshark"
-brew "yq"
 
-cask "1password-cli"
-cask "alfred"
-cask "atom"
-cask "boostnote"
-cask "chef/chef/inspec"
-cask "cloudapp"
-cask "diffmerge"
-cask "docker"
-cask "dropbox"
-cask "firefox"
-cask "google-cloud-sdk"
-cask "iterm2"
-cask "insomnia"
-cask "java"
-cask "keybase"
-cask "kitematic"
-cask "minikube"
-cask "mongodb-compass"
-cask "postman"
-cask "pritunl"
-cask "shiftit"
+# music
 cask "spotify"
-cask "vagrant"
-cask "virtualbox"
-cask "visual-studio-code"
-cask "wireshark"
-cask "whatsapp"
-cask "xquartz"
 
-# re: work laptop, the following are pre-installed
-# uncomment for other machines
-#cask "1password"
-#cask "google-chrome"
-#cask "slack"
+# networking
+brew "ipcalc"
+brew "nmap"
+brew "tcpdump"
+brew "wireshark"
+cask "wireshark"
+
+# other
+cask "alfred"
+cask "diffmerge"
+cask "dropbox"
+brew "graphviz"
+cask "postman"
+#brew "qt" # QT cross-platform framework and tools
+
+# ssh
+tap "parera10/csshx"
+brew "csshx"
+
+# terminal
+cask "iterm2"
+
+# terraform
+tap "warrensbox/tap" # tfswitch
+# brew "terraform" # tfswitch ftw!
+brew "terraform-docs"
+brew "tfswitch"
+
+# vpn
+cask "pritunl"

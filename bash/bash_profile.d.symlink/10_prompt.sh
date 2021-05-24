@@ -2,32 +2,6 @@
 #
 # Update bash prompt
 
-# TODO(robbie) still a work in progress...
-
-# if command -v __git_ps1 &>/dev/null; then
-#   export GIT_PS1_SHOWDIRTYSTATE="true"
-#   export GIT_PS1_SHOWSTASHSTATE="true"
-#   export GIT_PS1_SHOWUNTRACKEDFILES="true"
-#   export GIT_PS1_SHOWUPSTREAM="verbose"
-#   export GIT_PS1_STATESEPARATOR=":"
-#   export GIT_PS1_SHOWCOLORHINTS="true"
-#   PS1+="\$(__git_ps1)"
-# fi
-#
-# command -v aws_ps1 &>/dev/null \
-#   && PS1+=" \$(aws_ps1)"
-#
-# command -v kube_ps1 &>/dev/null \
-#   && PS1+=" \$(kube_ps1)"
-#
-# PS1+=" [\t]\n\$ "
-#
-# type kube_ps1 &>/dev/null \
-#   && LP_PS1_POSTFIX+="\$(kube_ps1)"
-#
-# ## Add a new line
-# LP_PS1_POSTFIX+="\n$(tput bold || echo "\e[1m")>$(tput sgr0 || echo "\e[0m") "
-
 # Install liquidprompt
 liquidprompt_dir="$HOME/.liquidprompt"
 [[ ! -d "$liquidprompt_dir" ]] && mkdir -p "$liquidprompt_dir"

@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+#
+# AWS ssm wrapper function.
+# Globals:
+#   AWS_DEFAULT_REGION
+# Arguments:
+#   @: Options and commands. Refer to usage.
+# Returns: None
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+
+# Parses usage comments and outputs to stdout
+# Globals:
+#   me: this script path
+# Arguments: None
+# Returns:
+#   Outputs usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options] <arguments>
+arguments: $(echo ""; grep -E '#[ ]*help\(a\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(a):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+# Print error to stderr
+# Globals: None
+# Arguments:
+#   *: error message
+# Returns:
+#   Outputs error to stderr
+err() {
+  >&2 echo "[error] $*"
+}
+
+! command -v session-manager-plugin &>/dev/null \
+  && err "session-manager-plugin binary not found; please install" \
+  && exit 1
+
+list=0
+region="$AWS_DEFAULT_REGION"
+while [[ -n "$1" ]]; do
+  case "$1" in
+    # help(o): -c, --cluster @ EKS cluster name for filtering
+    -c|--cluster) shift; cluster_name="$1" ;;
+    # help(o): -d, --doc @ Session document name
+    -d|--doc)     shift; doc_name="$1" ;;
+    # help(o): -r, --region @ AWS region
+    -r|--region)  shift; region="$1" ;;
+    # help(o): -l, --list @ List available instance IDs
+    -l|--list)    list=1 ;;
+    # help(o): -h, --help @
+    -h|--help)    print_usage && exit 0 ;;
+    # help(a): host @ instance-id, ip-address, or k8s-node-name
+    *)            input="$1" ;;
+  esac
+  shift
+done
+region_output="AWS REGION: $region"
+
+add_filters=()
+add_document=()
+if [[ -n "$cluster_name" ]]; then
+  add_filters+=(
+    "--filters"
+    "Key=tag-key,Values=kubernetes.io/cluster/$cluster_name"
+  )
+fi
+if [[ -n "$doc_name" ]]; then
+  add_document+=(
+    "--document-name"
+    "$doc_name"
+  )
+fi
+
+[[ -z "$region" ]] && err "no aws region found or specified" && exit 1
+[[ "$list" -eq 1 ]] \
+  && echo "$region_output" \
+  && aws ssm describe-instance-information --region "$region" --output table "${add_filters[@]}" \
+  && exit 0
+[[ -z "$input" ]] && print_usage && exit 0
+
+echo "$region_output"
+if [[ "$input" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3} ]] \
+  || [[ "$input" =~ ip-[0-9]{1,3}-[0-9]{1,3}-[0-9]{1,3}-[0-9]{1,3}[a-z0-9.]* ]] \
+  || [[ "$input" =~ i-[a-z0-9]+ ]]; then
+  target="$(aws ssm describe-instance-information --region "$region" --output text "${add_filters[@]}" \
+    | grep "$input" | awk '{print $5}')"
+else
+  err "invalid argument" && print_usage && exit 1
+fi
+
+found="$(wc -w <<< "$target" | tr -d ' ')"
+[[ "$found" -eq 0 ]] \
+  && err "instance-id not found for $input; please try --list option" \
+  && exit 1
+[[ "$found" -gt 1 ]] \
+  && err "multiple instance-ids found for $input; please try --list option" \
+  && exit 1
+
+aws ssm start-session --region "$region" --target "$target" "${add_document[@]}"

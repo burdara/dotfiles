@@ -31,12 +31,18 @@ curl -sfLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
 [[ ! -d "$HOME/.config" ]] && mkdir -p "$HOME/.config"
 
 # link dotfiles
-_link_file "$HOME/.bashrc" "$SELF_DIR/bashrc.symlink"
-_link_file "$HOME/.bash_profile" "$SELF_DIR/bash_profile.symlink"
-_link_file "$HOME/.bash_profile.d" "$SELF_DIR/bash_profile.d.symlink"
+case "$SHELL" in
+ */bash)
+  _link_file "$HOME/.bashrc" "$SELF_DIR/bash/bashrc.symlink"
+  _link_file "$HOME/.bash_profile" "$SELF_DIR/bash/bash_profile.symlink"
+  _link_file "$HOME/.bash_profile.d" "$SELF_DIR/bash/bash_profile.d.symlink"
+  _link_file "$HOME/.liquid.ps1" "$SELF_DIR/bash/liquid.ps1.symlink"
+  ;;
+ */zsh)
+  echo "TODO"
+  ;;
+esac
 _link_file "$HOME/bin" "$SELF_DIR/bin.symlink"
 _link_file "$HOME/.config/git" "$SELF_DIR/config.git.symlink"
 _link_file "$HOME/.vimrc" "$SELF_DIR/vimrc.symlink"
-_link_file "$HOME/.liquid.ps1" "$SELF_DIR/liquid.ps1.symlink"
-
 touch "$SELF_DIR/config.git.symlink/config.custom"

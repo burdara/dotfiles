@@ -30,7 +30,10 @@ export CLICOLOR=1
 export LSCOLORS=gxfxcxdxbxegedabagacad
 # shellcheck source=/dev/null
 [[ -r "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
-[[ "${BASH_VERSION%%.*}" -ge 4 ]] && _source_bash_profiles \
-  || printf "BASH version 4 or higher is required!\\n"
+if [[ "${BASH_VERSION%%.*}" -ge 5 ]]; then
+  _source_bash_profiles
+else
+  printf "BASH version 5 or higher is required!\\n"
+fi
 unset _source_bash_profiles
 printf "Done. Happy coding!\\n"

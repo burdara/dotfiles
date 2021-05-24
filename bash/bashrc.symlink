@@ -5,26 +5,40 @@
 [[ ! -d "$HOME/bin" ]] && mkdir -p "$HOME/bin"
 
 # Checks specified directoriess and adds them to PATH, if valid.
-# Globals:
-#   None.
+# Globals: None
 # Arguments:
 #   1: Optional -p|--prepend to add to front of PATH
 #   @: List of directory paths
 # Returns:
-#   None.
+#   Sets PATH environment variable
 add_paths() {
-  local loc p paths
+  local paths=()
+  local action="a"
   while [[ -n "$1" ]]; do
     case "$1" in
-      -p|--prepend) loc="pre" ;;
-      *) paths+="$1 "
+      -p|--prepend) action="p" ;;
+      -a|--append)  action="a" ;;
+      -h|--help) cat <<EOF
+add_path [options] <path...>
+options:
+  -a, --append   Append path (default)
+  -p, --prepend  Prepend path
+  -h, --help
+EOF
+        ;;
+      *) paths+=("$1")
     esac
     shift
   done
-  for p in $paths; do
+  local p
+  for p in "${paths[@]}"; do
     [[ ! -d "$p" ]] && continue
-    if [[ ! "$PATH" =~ [:]?${p}[:]? ]]; then 
-      [[ "$loc" == "pre" ]] && PATH="$p:$PATH" || PATH="$PATH:$p"
+    if [[ ! "$PATH" =~ [:]?${p}[/]?[:]? ]]; then 
+      if [[ "$action" == "p" ]]; then 
+        PATH="$p:$PATH"
+      else
+        PATH="$PATH:$p"
+      fi
       export PATH
     fi
   done

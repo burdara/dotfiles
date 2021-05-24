@@ -17,3 +17,4 @@ Plug 'w0rp/ale'
 call plug#end()
 
 set number
+set paste
