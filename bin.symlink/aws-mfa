@@ -122,4 +122,4 @@ for cmd in "${commands[@]}"; do
   [[ "$set_output" == "true" ]] && eval "$cmd"
   [[ "$print_output" == "true" ]] && echo "$cmd"
 done
-[[ "$set_output" == "true" ]] && "$mydir"/aws-ps1 --clear
+[[ "$set_output" == "true" && -x "$mydir/aws-ps1" ]] && "$mydir"/aws-ps1 --clear
