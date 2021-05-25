@@ -1,4 +1,8 @@
-tap "caskroom/cask"
+# Make sure xcode is installed first
+# xcode-select --install
+
+tap "homebrew/cask-versions"
+tap "homebrew/cask"
 
 # 1password
 cask "1password-cli"
@@ -8,12 +12,11 @@ cask "1password"
 tap "aws/tap"
 brew "awscli"
 brew "aws-sam-cli"
-brew "session-manager-plugin"
+cask "session-manager-plugin"
 
 # bash / shell
 brew "bash"
 brew "bash-completion@2"
-brew "bats"
 brew "jq"
 brew "readline"
 brew "tree"
@@ -24,7 +27,6 @@ brew "yq"
 brew "autoconf"
 brew "cmake"
 brew "coreutils"
-brew "dep" # golang dep
 brew "git"
 brew "maven"
 
@@ -38,9 +40,6 @@ brew "shellcheck"
 # communications
 cask "whatsapp"
 #cask "slack"
-
-# compression
-brew "unrar"
 
 # configuration management
 brew "ansible"
@@ -76,7 +75,15 @@ cask "inspec"
 
 # java
 tap "adoptopenjdk/openjdk"
-cask "java"
+#cask "adoptopenjdk8"
+#cask "adoptopenjdk9"
+#cask "adoptopenjdk10"
+#cask "adoptopenjdk11"
+#cask "adoptopenjdk12"
+#cask "adoptopenjdk13"
+#cask "adoptopenjdk14"
+#cask "adoptopenjdk15"
+cask "adoptopenjdk16"
 
 # helm
 brew "helmfile"
