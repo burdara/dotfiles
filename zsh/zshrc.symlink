@@ -1,0 +1,12 @@
+plugins=(
+  "autojump"
+  "aws"
+  "cargo"
+  "command-not-found"
+  "docker"
+  "gcloud"
+  "git"
+)
+
+[[ "$(uname -s)" == "Darwin" ]] \
+  && plugins+=("osx")

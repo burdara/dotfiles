@@ -3,12 +3,9 @@
 # Bash Profile.
 
 # Sources bash profiles
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
+# Globals: None
+# Arguments: None
+# Returns: None
 _source_bash_profiles() {
   local alibs libs lib
   if [[ -d "$HOME/.bash_profile.d" ]]; then

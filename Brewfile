@@ -1,95 +1,47 @@
-# Make sure xcode is installed first
-# xcode-select --install
-
+## Make sure xcode is installed first
+## xcode-select --install
 tap "homebrew/cask-versions"
 tap "homebrew/cask"
 
-# 1password
-cask "1password-cli"
-cask "1password"
-
-# aws
+## aws
 tap "aws/tap"
 brew "awscli"
 brew "aws-sam-cli"
-cask "session-manager-plugin"
-
-# bash / shell
+## bash / shell
+brew "autojump"
 brew "bash"
 brew "bash-completion@2"
+brew "fzf"
 brew "jq"
 brew "readline"
 brew "tree"
 brew "watch"
 brew "yq"
-
-# build tools
+## build tools
 brew "autoconf"
 brew "cmake"
 brew "coreutils"
 brew "git"
 brew "maven"
-
-# browsers
-cask "firefox"
-#cask "google-chrome"
-
-# checks
+## checks
 brew "shellcheck"
-
-# communications
-cask "whatsapp"
-#cask "slack"
-
-# configuration management
+## configuration management
 brew "ansible"
-
-# data
-cask "mongodb-compass"
+## data
 brew "redis"
-
-# docker
+## docker
 brew "docker"
-cask "docker"
 brew "hadolint"
-cask "kitematic"
-
-# editors
-cask "atom"
-cask "visual-studio-code"
-
-# encryption / tls
+## encryption / tls
 brew "cfssl"
 brew "gnupg"
-cask "keybase"
 brew "openssl"
 brew "sops"
 brew "sslyze"
-
-# google cloud sdk
-cask "google-cloud-sdk"
-
-# inspec
-tap "chef/chef"
-cask "inspec"
-
-# java
-tap "adoptopenjdk/openjdk"
-#cask "adoptopenjdk8"
-#cask "adoptopenjdk9"
-#cask "adoptopenjdk10"
-#cask "adoptopenjdk11"
-#cask "adoptopenjdk12"
-#cask "adoptopenjdk13"
-#cask "adoptopenjdk14"
-#cask "adoptopenjdk15"
-cask "adoptopenjdk16"
-
-# helm
+## helm
 brew "helmfile"
 brew "gnu-getopt"
-
-# kubernetes
+## kubernetes
 tap "derailed/k9s"
 brew "k9s"
 brew "kube-ps1"
@@ -103,8 +55,7 @@ brew "istioctl"
 tap "derailed/popeye"
 brew "popeye"
 brew "stern"
-
-# languages / dev environments
+## languages / dev environments
 brew "go"
 brew "jsonnet"
 brew "lua"
@@ -114,41 +65,76 @@ brew "pipenv"
 brew "pyenv"
 brew "rbenv"
 brew "rustup-init"
-
-# multiplexer
+## multiplexer
 brew "screen"
 brew "tmux"
-
-# music
-cask "spotify"
-
-# networking
+## networking
 brew "ipcalc"
 brew "nmap"
 brew "tcpdump"
 brew "wireshark"
-cask "wireshark"
-
-# other
-cask "alfred"
-cask "diffmerge"
-cask "dropbox"
+## other
 brew "graphviz"
-cask "postman"
 #brew "qt" # QT cross-platform framework and tools
-
-# ssh
+## ssh
 tap "parera10/csshx"
 brew "csshx"
-
-# terminal
-cask "iterm2"
-
-# terraform
+## terraform
 tap "warrensbox/tap" # tfswitch
-# brew "terraform" # tfswitch ftw!
+#brew "terraform" # tfswitch ftw!
 brew "terraform-docs"
 brew "tfswitch"
 
-# vpn
+## CASKS
+## These are grouped together as they may prompt for password.
+
+## 1password
+cask "1password-cli"
+cask "1password"
+## aws
+cask "session-manager-plugin"
+## browsers
+cask "firefox"
+cask "google-chrome"
+## communications
+cask "whatsapp"
+cask "slack"
+## data
+cask "mongodb-compass"
+## docker
+cask "docker"
+cask "kitematic"
+## editors
+cask "atom"
+cask "visual-studio-code"
+## encryption / tls
+cask "keybase"
+## google cloud sdk
+cask "google-cloud-sdk"
+## inspec
+tap "chef/chef"
+cask "inspec"
+## java
+tap "adoptopenjdk/openjdk"
+#cask "adoptopenjdk8"
+#cask "adoptopenjdk9"
+#cask "adoptopenjdk10"
+#cask "adoptopenjdk11"
+#cask "adoptopenjdk12"
+#cask "adoptopenjdk13"
+#cask "adoptopenjdk14"
+#cask "adoptopenjdk15"
+cask "adoptopenjdk16"
+## music
+cask "spotify"
+## networking
+cask "wireshark"
+## other
+cask "alfred"
+cask "diffmerge"
+cask "dropbox"
+cask "postman"
+## terminal
+cask "iterm2"
+## vpn
 cask "pritunl"

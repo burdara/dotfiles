@@ -24,7 +24,7 @@ _setup_git_aliases() {
 # Arguments: None
 # Returns: None
 _setup_git_config() {
-  local config="$HOME/.config/git/config.custom"
+  local config="$HOME/.config/git/config.local"
 
   local attr input 
   for attr in user.name user.email; do

@@ -44,6 +44,22 @@ EOF
   done
 }
 
+# Sources bashrc.d files
+# Globals: None
+# Arguments: None
+# Returns: None
+_source_bashrcs() {
+  local alibs libs lib
+  if [[ -d "$HOME/.bashrc.d" ]]; then
+    libs=$(find -L "$HOME/.bashrc.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)
+    IFS=' ' read -ra alibs <<< "$libs"
+    for lib in "${alibs[@]}"; do
+      # shellcheck source=/dev/null
+      [[ -r "$lib" ]] && source "$lib"
+    done
+  fi
+}
+
 # Default paths
 add_paths \
   "$HOME/bin" \
@@ -54,7 +70,12 @@ add_paths \
   "/usr/sbin" \
   "/sbin" \
 
-# Default Aliases
+if [[ "${BASH_VERSION%%.*}" -ge 5 ]]; then
+  _source_bashrcs
+else
+  printf "BASH version 5 or higher is required!\\n"
+fi
+
 alias ls='ls -F'
 alias la='ls -AF'
 alias ll='ls -l'
