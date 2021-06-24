@@ -53,7 +53,7 @@ while [[ -n "$1" ]]; do
     # help(o): -h, --help @
     -h|--help)          print_usage && exit 0 ;;
     # help(a): <input> @ input filter text for AWS CLI
-    *)                  input+=("$1") ;;
+    *)                  name_filter+=("$1") ;;
   esac
   shift
 done
@@ -65,8 +65,14 @@ done
 [[ "$rc" -eq 1 ]] && exit 1
 
 fields=()
-[[ "$include_private" == "true" ]] && fields+=(".PrivateIpAddress" "+\"~\"+")
-[[ "$include_public" == "true" ]] && fields+=(".PublicIpAddress" "+\"~\"+")
+if [[ "$include_private" == "true" ]]; then
+  [[ -n "${fields[*]}" ]] && fields+=("+\"~\"+")
+  fields+=(".PrivateIpAddress")
+fi
+if [[ "$include_public" == "true" ]]; then
+  [[ -n "${fields[*]}" ]] && fields+=("+\"~\"+")
+  fields+=(".PublicIpAddress")
+fi
 jq_query=".Reservations[].Instances[] | ${fields[*]}"
 [[ "$include_names" == "true" ]] \
   && jq_query=".Reservations[].Instances[] | ${fields[*]} if .Tags[].Key == \"Name\" then select(.Tags[].Key == \"Name\").Value else empty end)"

@@ -4,8 +4,8 @@
 mydir="$(cd "$(dirname "$0")" && pwd)"
 me="$mydir/$(basename "$0")"
 readonly mydir me
-user="$SSH_USER"
-options="-o StrictHostKeyChecking=no"
+user="${SSH_USER:-$(whoami)}"
+options=("-o" "StrictHostKeyChecking=no")
 ssh_cmd="${SSH_CMD:-ssh}"
 
 # Parses usage comments and outputs to stdout
@@ -22,7 +22,6 @@ EOF
 }
 
 hc=0
-options=()
 hosts=()
 while [[ -n "$1" ]]; do
   case "$1" in

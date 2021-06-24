@@ -2,15 +2,6 @@
 #
 # Update bash prompt
 
-# Install liquidprompt
-liquidprompt_dir="$HOME/.liquidprompt"
-[[ ! -d "$liquidprompt_dir" ]] && mkdir -p "$liquidprompt_dir"
-if [[ ! -e "$liquidprompt_dir/liquidprompt" ]]; then
-  git clone "https://github.com/nojhan/liquidprompt.git" "$liquidprompt_dir"
-else
-  ( cd "$liquidprompt_dir" && git pull 1>/dev/null ; )
-fi
-
 # liquidprompt customizations
 export LP_USER_ALWAYS=0
 export LP_ENABLE_PERM=0
@@ -30,6 +21,4 @@ export LP_COLOR_PATH_SEPARATOR="\033[1;33m"
 
 export LP_PS1_FILE="$HOME/.liquid.ps1"
 # shellcheck source=/dev/null
-[[ -e "$liquidprompt_dir/liquidprompt" ]] && source "$liquidprompt_dir/liquidprompt"
-
-unset liquidprompt_dir
+[[ -e "$HOME/.liquidprompt/liquidprompt" ]] && source "$HOME/.liquidprompt/liquidprompt"

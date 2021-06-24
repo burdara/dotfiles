@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Bash run commands.
+
+
+
+# Sources bashrc.d files
+# Globals: None
+# Arguments: None
+# Returns: None
+_source_bashrcs() {
+  local alibs libs lib
+  if [[ -d "$HOME/.bashrc.d" ]]; then
+    libs=$(find -L "$HOME/.bashrc.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)
+    IFS=' ' read -ra alibs <<< "$libs"
+    for lib in "${alibs[@]}"; do
+      # shellcheck source=/dev/null
+      [[ -r "$lib" ]] && source "$lib"
+    done
+  fi
+}
+# source common dotfiles
+[[ -r "$HOME/.shellrc" ]] && source "$HOME/.shellrc"
+# source bash dotfiles
+if [[ "${BASH_VERSION%%.*}" -ge 5 ]]; then
+  _source_bashrcs
+else
+  echo "BASH version 5 or higher is required!"
+fi
+
+# cleanup
+unset _source_bashrcs

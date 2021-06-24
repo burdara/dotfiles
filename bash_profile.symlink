@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Bash Profile.
+echo "Loading dotfiles..."
+# Set vi mode
+set -o vi
+# Turn on colors
+export CLICOLOR=1
+# Color files by type
+export LSCOLORS=gxfxcxdxbxegedabagacad
+# shellcheck source=/dev/null
+[[ -r "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
+# cleanup
+unset _source_bash_profiles
+echo "Done. Happy coding!n"

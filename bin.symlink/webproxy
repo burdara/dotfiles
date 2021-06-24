@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+#
+# Set command line http(s) proxy environment variables
+# i.e http_proxy, https_proxy, HTTP_PROXY, HTTPS_PROXY
+# Globals: None
+# Arguments:
+#   [options]: refer to usage
+# Returns:
+#   Depends on output options
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+
+# Parses usage comments and outputs to stdout
+# Globals:
+#   me: this script path
+# Arguments: None
+# Returns:
+#   Scripts usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options]
+arguments: $(echo ""; grep -E '#[ ]*help\(a\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(a):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+# Print error to stderr
+# Globals: None
+# Arguments:
+#   *: error message
+# Returns:
+#   Outputs error to stderr
+err() {
+  >&2 echo "[error] $*"
+}
+
+! command -v python &>/dev/null \
+   && err "python binary required; please install first" && exit 1
+
+proxy_vars="http_proxy https_proxy HTTP_PROXY HTTPS_PROXY"
+while [[ -n "$1" ]]; do
+  case "$1" in
+    # help(o): -x, --proxy-url @ Proxy URL
+    -x|--proxy-url)   shift; proxy_url="$1" ;;
+    # help(o): -u, --username @ Proxy username
+    -u|--username)    shift; username="$1" ;;
+    # help(o): -p, --password @ Proxy password; use --password-stdin
+    -p|--password)    shift; password="$1" ;;
+    # help(o): -p, --password @ Proxy password via stdin (recommended)
+    --password-stdin) password="$(cat /dev/stdin)" ;;
+    # help(a): set|unset @ Whether to set or remove proxy config
+    unset|set)        action="$1" ;;
+    # help(o): -h, --help @ 
+    -h|--help)        print_usage && exit 0 ;;
+  esac
+  shift
+done
+
+case "$(python --version)" in
+  *3.*) python_cmd='import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))' ;;
+  *2.*) python_cmd='import sys, urllib as ul; print ul.quote_plus(sys.argv[1])' ;;
+  *) err "python not found" && exit 1 ;;
+esac
+
+case "$action" in
+  set)
+    while [[ -z "$proxy_url" ]]; do
+      read -r -p "proxy url: " proxy_url
+    done
+    while [[ -z "$username" ]]; do
+      read -r -p "proxy username: " username
+    done
+    while [[ -z "$password" ]]; do
+      read -s -r -p "proxy password: " password
+    done
+    safe_password=$(python -c "$python_cmd" "$password")
+    for v in $proxy_vars; do
+      cmd="export $v=http://$username:$safe_password@$proxy_url"
+      eval "$cmd"
+    done
+  ;;
+  unset)
+    for v in $proxy_vars; do
+    cmd="unset $v"
+    $cmd
+    done
+  ;;
+  *)
+    for v in $proxy_vars; do
+      echo "$v=${!v}"
+    done
+  ;;
+esac
