@@ -100,10 +100,10 @@ cask "1password"
 cask "session-manager-plugin"
 ## browsers
 cask "firefox"
-cask "google-chrome"
+# cask "google-chrome" ## ALREADY INSTALLED; UNCOMMENT OTHERWISE
 ## communications
 cask "whatsapp"
-cask "slack"
+# cask "slack" ## ALREADY INSTALLED; UNCOMMENT OTHERWISE
 ## data
 cask "mongodb-compass"
 ## docker / k8s
