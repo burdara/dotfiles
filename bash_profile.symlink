@@ -12,4 +12,4 @@ export LSCOLORS=gxfxcxdxbxegedabagacad
 [[ -r "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
 # cleanup
 unset _source_bash_profiles
-echo "Done. Happy coding!n"
+echo "Done. Happy coding!"

@@ -2,8 +2,6 @@
 #
 # Bash run commands.
 
-
-
 # Sources bashrc.d files
 # Globals: None
 # Arguments: None
@@ -19,6 +17,7 @@ _source_bashrcs() {
     done
   fi
 }
+
 # source common dotfiles
 [[ -r "$HOME/.shellrc" ]] && source "$HOME/.shellrc"
 # source bash dotfiles

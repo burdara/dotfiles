@@ -1,0 +1,14 @@
+# ignore all scripts
+**/**
+# except my custom scripts
+!.gitignore
+!aws-ips
+!aws-mfa
+!aws-ps1
+!aws-ssm
+!dnsflush
+!duf
+!show-cert
+!sshw
+!vim-bare
+!webproxy

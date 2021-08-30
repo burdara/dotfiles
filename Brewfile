@@ -29,6 +29,7 @@ brew "shellcheck"
 brew "ansible"
 ## data
 brew "redis"
+cask "pgadmin4"
 ## docker
 brew "docker"
 brew "hadolint"
@@ -44,6 +45,7 @@ brew "gnu-getopt"
 ## kubernetes
 tap "derailed/k9s"
 brew "k9s"
+brew "kind"
 brew "kube-ps1"
 brew "kubectx"
 brew "kubernetes-cli"
@@ -84,6 +86,9 @@ tap "warrensbox/tap" # tfswitch
 #brew "terraform" # tfswitch ftw!
 brew "terraform-docs"
 brew "tfswitch"
+# security
+tap "aquasecurity/trivy"
+brew "trivy"
 
 ## CASKS
 ## These are grouped together as they may prompt for password.
@@ -101,9 +106,10 @@ cask "whatsapp"
 cask "slack"
 ## data
 cask "mongodb-compass"
-## docker
+## docker / k8s
 cask "docker"
 cask "kitematic"
+cask "lens"
 ## editors
 cask "atom"
 cask "visual-studio-code"

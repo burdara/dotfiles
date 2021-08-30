@@ -16,6 +16,7 @@ plugins=(
   "docker"
   "gcloud"
   "git"
+  "vi-mode"
 )
 
 [[ "$(uname -s)" == "Darwin" ]] \
