@@ -57,6 +57,7 @@ brew "istioctl"
 tap "derailed/popeye"
 brew "popeye"
 brew "stern"
+brew "krew"
 ## languages / dev environments
 brew "go"
 brew "jsonnet"
