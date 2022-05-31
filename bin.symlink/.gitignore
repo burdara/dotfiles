@@ -6,6 +6,7 @@
 !aws-mfa
 !aws-ps1
 !aws-ssm
+!awsph
 !dnsflush
 !duf
 !show-cert
