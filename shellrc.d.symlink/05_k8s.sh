@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Kubernetes configurations
 export KUBECONFIG_HOME="$HOME/.kube"
@@ -11,7 +11,7 @@ KUBECONFIG="$KUBECONFIG_HOME/config"
 kubecfgs="$(grep '^kind: Config$' "$KUBECONFIG_HOME"/* 2>/dev/null \
   | awk -F: '{print $1}' | grep -v "$KUBECONFIG_HOME/config" \
   | xargs | tr ' ' ':')"
-test -n "$kubecfgs" && KUBECONFIG+=":$kubecfgs"
+test -n "$kubecfgs" && KUBECONFIG="$KUBECONFIG:$kubecfgs"
 export KUBECONFIG
 
 # krew binaries

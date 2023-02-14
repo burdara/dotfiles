@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # setup cargo configurations
-[[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# shellcheck source=/dev/null
+test -r "$HOME/.cargo/env" && . "$HOME/.cargo/env"

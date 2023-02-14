@@ -6,18 +6,21 @@
 _git_config="$HOME/.config/git/config.local"
  
 for attr in user.name user.email; do
-  [[ -z "$(git config --file "$_git_config" "$attr")" ]] \
-    && read -r -p "Enter Git $attr: " input \
-    && git config --file "$_git_config" "$attr" "$input"
+  if test -z "$(git config --file "$_git_config" "$attr")"; then
+    printf "Enter Git %s: " "$attr" >&2
+    read -r input \
+    git config --file "$_git_config" "$attr" "$input"
+  fi
 done
 
-local v1 v2
 v1="$(git config --file "$_git_config" diff.tool)"
 v2="$(git config --file "$_git_config" merge.tool)"
 if test -z "$v1" || test -z "$v2"; then
   git mergetool --tool-help
-  read -r -p "Enter Git diff.tool: [$v1] " input
+  printf "Enter Git diff.tool: [%s]" "$v1" >&2
+  read -r input
   git config --file "$_git_config" diff.tool "${input:-$v1}"
-  read -r -p "Enter Git merge.tool: [$v1] " input
+  printf "Enter Git merge.tool: [%s]" "$v1" >&2
+  read -r input
   git config --file "$_git_config" merge.tool "${input:-$v1}"
 fi
