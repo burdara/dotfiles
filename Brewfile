@@ -17,6 +17,7 @@ brew "readline"
 brew "tree"
 brew "watch"
 brew "yq"
+brew "bats-core"
 ## build tools
 brew "autoconf"
 brew "cmake"
@@ -42,6 +43,9 @@ brew "sslyze"
 ## helm
 brew "helmfile"
 brew "gnu-getopt"
+## jira-cli
+tap "ankitpokhrel/jira-cli"
+brew "jira-cli"
 ## kubernetes
 tap "derailed/k9s"
 brew "k9s"
@@ -59,6 +63,7 @@ brew "popeye"
 brew "stern"
 brew "krew"
 brew "kubebuilder"
+brew "kubeconform"
 ## languages / dev environments
 brew "gh"
 brew "go"
