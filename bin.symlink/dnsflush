@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Flush DNS. Currently darwin only.
+# Globals: None
+# Arguments: None
+# Returns: None
+[[ "$(uname)" == "Darwin" ]] \
+  && sudo dscacheutil -flushcache \
+  && sudo killall -HUP mDNSResponder

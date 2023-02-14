@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# SSH wrapper script
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+user="${SSH_USER:-$(whoami)}"
+options=("-o" "StrictHostKeyChecking=no")
+ssh_cmd="${SSH_CMD:-ssh}"
+
+# Parses usage comments and outputs to stdout
+# Globals: None
+# Arguments: None
+# Returns:
+#   Scripts usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options] [ssh_options] [-- <cmd>]
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+hc=0
+hosts=()
+while [[ -n "$1" ]]; do
+  case "$1" in
+    # help(o): -c @ Outputs SSH command
+    -c) show_cmd="true" ;;
+    # help(o): -i <identity_file> @ SSH identity file
+    -i) shift; options+=("-i" "$1") ;;
+    # help(o): -h <host> @ SSH host/ip; can be multiple
+    -h) shift; hosts+=("$1"); ((hc++)) ;;
+    # help(o): -t <tunnel_port> @ Create SSH tunnel using specified port
+    -t) shift; options+=("-N" "-f" "-L" "$1:localhost:$1") ;;
+    # help(o): -u <user> @ SSH username (default: $user)
+    -u) shift; user="$1" ;;  
+    # help(o): --help @ Usage information
+    --help) print_usage  && exit 0 ;;
+    # help(o): -- <cmd> @ Execute command via SSH
+    --) shift; cmd="-T \"$*\"" ;;
+    # help(o): [ssh_options] @ Other ssh specific options
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+# multiple hosts provided, then use cluster ssh
+if [[ "$hc" -gt 1 ]]; then
+  ssh_cmd="${CSSH_CMD:-csshx}"
+  c_hosts=()
+  for h in "${hosts[@]}"; do
+    c_hosts+=("$user@$h")
+  done
+  # shellcheck disable=2001
+  case "$ssh_cmd" in
+    i2cssh) c_options="--iterm2 $(sed 's/-\(.\) /-X\1=/g' <<<"${options[*]}")" ;;
+    csshx)  c_options="--ssh_args \"${options[*]}\"" ;;
+  esac
+  full_cmd="$ssh_cmd $c_options ${c_hosts[*]}"
+else
+  full_cmd="$ssh_cmd ${options[*]} $user@${hosts[0]} $cmd"
+fi
+[[ "$show_cmd" == "true" ]] && echo "$full_cmd"
+eval "$full_cmd"

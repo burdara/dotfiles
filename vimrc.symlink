@@ -1,19 +1,48 @@
-call plug#begin('~/.vim/plugged')
+" Reference: https://github.com/thoughtbot/dotfiles/blob/master/vimrc
+set encoding=utf-8
 
-Plug 'airblade/vim-gitgutter'
-Plug 'editorconfig/editorconfig-vim'
-Plug 'itchyny/lightline.vim'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
-Plug 'mattn/emmet-vim'
-Plug 'scrooloose/nerdtree'
-Plug 'scrooloose/nerdcommenter'
-Plug 'terryma/vim-multiple-cursors'
-Plug 'tpope/vim-eunuch'
-Plug 'tpope/vim-surround'
-Plug 'mbbill/undotree'
-Plug 'w0rp/ale'
+set nobackup
+set nowritebackup
+set noswapfile
+set history=50
+set ruler
+set showcmd
+set incsearch
+set laststatus=2
+set autowrite
+set modelines=0
+set nomodeline
 
-call plug#end()
+if filereadable(expand("~/.vimrc.bundles"))
+  source ~/.vimrc.bundles
+endif
 
+set tabstop=2
+set shiftwidth=2
+set shiftround
+set expandtab
+
+" Display extra whitespace
+set listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
+
+" Use one space, not two, after punctuation.
+set nojoinspaces
+
+" Make it obvious where 80 characters is
+set textwidth=80
+set colorcolumn=+1
+
+" Numbers
 set number
+set numberwidth=5
+
+" Do it right
+nnoremap <Left> :echoe "Use h"<CR>
+nnoremap <Right> :echoe "Use l"<CR>
+nnoremap <Up> :echoe "Use k"<CR>
+nnoremap <Down> :echoe "Use j"<CR>
+
+" Local config
+if filereadable($HOME . "/.vimrc.local")
+  source ~/.vimrc.local
+endif

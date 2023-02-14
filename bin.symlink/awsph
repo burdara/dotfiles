@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+#
+# awsp(1) is a utility to manage and switch between aws profiles.
+#
+# Reference:
+# This is a port of kubectx binary but for aws profiles
+# https://github.com/ahmetb/kubectx
+
+[[ -n $DEBUG ]] && set -x
+
+set -eou pipefail
+IFS=$'\n\t'
+
+SELF_CMD="$0"
+
+AWSP_PRE="${XDG_CACHE_HOME:-$HOME/.aws}/awsp.pre"
+AWSP="${XDG_CACHE_HOME:-$HOME/.aws}/awsp"
+
+usage() {
+  local SELF
+  SELF="${AWSP_SELF_OVERRIDE:-awsph}"
+
+  cat <<EOF
+USAGE:
+  $SELF                       : list the profiles
+  $SELF <NAME>                : switch to profile <NAME>
+  $SELF -                     : switch to the previous profile
+  $SELF -c, --current         : show the current profile name
+  $SELF -u, --unset           : unset the current profile
+  $SELF -s, --set             : shell source output for "eval \$($SELF --set)"
+
+  $SELF -h, --help            : show this message
+EOF
+}
+
+exit_err() {
+   echo >&2 "$1"
+   exit 1
+}
+
+current_profile() {
+  local rc cur_prfl_env cur_prfl_file nofail
+  cur_prfl_env="${AWS_PROFILE:-${AWS_DEFAULT_PROFILE:-""}}"
+  cur_prfl_file="$(read_profile_cur)"
+
+  if [[ -n "$cur_prfl_env" ]]; then
+    if [[ "$cur_prfl_env" != "$cur_prfl_file" ]]; then
+      save_profile_cur "$cur_prfl_env"
+    fi
+    echo "$cur_prfl_env"
+  elif [[ -n "$cur_prfl_file" ]]; then
+    echo "$cur_prfl_file"
+  elif [[ "$1" != "--no-fail" ]]; then
+    rc=1
+  fi
+  return "${rc:-0}"
+}
+
+get_profiles() {
+  $AWSCLI configure list-profiles | sort -n
+}
+
+list_profiles() {
+  set -u pipefail
+  local cur prfl_list
+  cur="$(current_profile)" || exit_err "error getting current profile"
+  prfl_list=$(get_profiles) || exit_err "error getting profile list"
+
+  local yellow darkbg normal
+  yellow=$(tput setaf 3 || true)
+  darkbg=$(tput setab 0 || true)
+  normal=$(tput sgr0 || true)
+
+  local cur_prfl_fg cur_prfl_bg
+  cur_prfl_fg=${AWSP_CURRENT_FGCOLOR:-$yellow}
+  cur_prfl_bg=${AWSP_CURRENT_BGCOLOR:-$darkbg}
+
+  for c in $prfl_list; do
+  if [[ -n "${_AWSP_FORCE_COLOR:-}" || \
+       -t 1 && -z "${NO_COLOR:-}" ]]; then
+    # colored output mode
+    if [[ "${c}" = "${cur}" ]]; then
+      echo "${cur_prfl_bg}${cur_prfl_fg}${c}${normal}"
+    else
+      echo "${c}"
+    fi
+  else
+    echo "${c}"
+  fi
+  done
+}
+
+read_profile_pre() {
+  if [[ -f "$AWSP_PRE" ]]; then
+    cat "$AWSP_PRE"
+  fi
+}
+
+read_profile_cur() {
+  if [[ -f "$AWSP" ]]; then
+    cat "$AWSP"
+  fi
+}
+
+save_profile_pre() {
+  local saved
+  saved="$(read_profile_pre)"
+  if [[ "$saved" != "$1" ]]; then 
+    printf %s "$1" > "$AWSP_PRE"
+  fi
+}
+
+save_profile_cur() {
+  local saved
+  saved="$(read_profile_cur)"
+  if [[ "$saved" != "$1" ]]; then 
+    printf %s "$1" > "$AWSP"
+  fi
+}
+
+choose_profile_interactive() {
+  local choice
+  choice="$(_AWSP_FORCE_COLOR=1 \
+    FZF_DEFAULT_COMMAND="${SELF_CMD}" \
+    fzf --ansi --no-preview || true)"
+  if [[ -z "${choice}" ]]; then
+    echo 2>&1 "error: you did not choose any of the options"
+    exit 1
+  else
+    set_profile "${choice}"
+  fi
+}
+
+set_profile() {
+  local prev
+  prev="$(current_profile)" || exit_err "error getting current profile"
+  save_profile_cur "$1"
+  if [[ "$prev" != "$1" ]]; then
+    save_profile_pre "$prev"
+  fi
+}
+
+swap_profile() {
+  local prfl
+  prfl="$(read_profile_pre)"
+  if [[ -z "$prfl" ]]; then
+    echo "error: No previous profile found." >&2
+    exit 1
+  fi
+  set_profile "$prfl"
+}
+
+profile_exists() {
+  grep -q ^"${1}"\$ <($AWSCLI configure list-profiles)
+}
+
+unset_profile() {
+  echo "Unsetting current profile." >&2
+  set_profile ""
+}
+
+output_shell_src() {
+  echo "export AWS_PROFILE=$(cat "$AWSP")"
+}
+
+main() {
+  if [[ -z "${AWSCLI:-}" ]]; then
+    if hash aws 2>/dev/null; then
+      AWSCLI=aws
+    elif hash aws.exe  2>/dev/null; then
+      AWSCLI=aws.exe
+    else
+      echo "awscli is not installed" >&2
+      exit 1
+    fi
+  fi
+
+  if [[ "$#" -eq 0 ]]; then
+    if [[ -t 1 &&  -z "${AWSP_IGNORE_FZF:-}" && "$(type fzf &>/dev/null; echo $?)" -eq 0 ]]; then
+      choose_profile_interactive
+    else
+      list_profiles
+    fi
+  elif [[ "$#" -gt 1 ]]; then
+    echo "error: too many arguments" >&2
+    usage
+    exit 1
+  elif [[ "$#" -eq 1 ]]; then
+    if [[ "${1}" == "-s" || "${1}" == "--set" ]]; then
+      output_shell_src
+    elif [[ "${1}" == "-" ]]; then
+      swap_profile
+    elif [[ "${1}" == '-c' || "${1}" == '--current' ]]; then
+      current_profile --no-fail
+    elif [[ "${1}" == '-u' || "${1}" == '--unset' ]]; then
+      unset_profile
+    elif [[ "${1}" == '-h' || "${1}" == '--help' ]]; then
+      usage
+    elif [[ "${1}" =~ ^-(.*) ]]; then
+      echo "error: unrecognized flag \"${1}\"" >&2
+      usage
+      exit 1
+    else
+      set_profile "${1}"
+    fi
+  else
+    usage
+    exit 1
+  fi
+}
+
+main "$@"

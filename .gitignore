@@ -1,5 +1,6 @@
-# Custom Git config
-config.git.symlink/config.custom*
+# editor
+.vscode
 
-# Custom bash_profile.d
-bash_profile.d.symlink/*_custom.sh
+# local files
+**/*.local*
+**/*_local.sh

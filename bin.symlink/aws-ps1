@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+#
+# AWS Prompt Helper
+# Globals:
+#   AWS_ACCESS_KEY_ID:        AWS Access key
+#   AWS_DEFAULT_OUTPUT:       AWS Default output
+#   AWS_DEFAULT_PROFILE:      AWS Default profile
+#   AWS_DEFAULT_REGION:       AWS Default region
+#   AWS_PROFILE:              AWS Current profile
+#   AWS_SECRET_ACCESS_KEY:    AWS Secret access key
+#   AWS_SESSION_TOKEN:        AWS Session token
+#   AWS_SESSION_TOKEN_EXPIRE: AWS Session token expiration timestamp
+#   AWS_PS1:                  Whether PS1 is enabled
+#   AWS_PS1_CACHE_EXPIRE:     Cache of session expiration timestamp
+#   AWS_PS1_CACHE_PROFILE:    Cache of currnet profile
+#   AWS_PS1_CACHE_SESSION:    Cache of session token
+#   AWS_PS1_CACHE_SRCP:       Cache of source profile
+# Arguments:
+#   --clear: clears cache file
+# Returns:
+#   Outputs PS1 output
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+
+AWS_PS1_CACHE_FILE="$HOME/.aws/.ps1_cache"
+
+# Parses usage comments and outputs to stdout
+# Globals:
+#   me: this script path
+# Arguments: None
+# Returns:
+#   Scripts usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options]
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+# Sources AWS PS1 cache file
+# Globals:
+#   AWS_PS1_CACHE_FILE: Cache file path
+# Arguments: None
+# Returns: None
+aws_ps1_cache_read() {
+  # shellcheck source=/dev/null
+  [[ -r "$AWS_PS1_CACHE_FILE" ]] && source "$AWS_PS1_CACHE_FILE"
+}
+
+# Clears AWS PS1 cache file
+# Globals:
+#   AWS_PS1_CACHE_FILE: Cache file path
+# Arguments: None
+# Returns: None
+aws_ps1_cache_clear() {
+  [[ -r "$AWS_PS1_CACHE_FILE" ]] && rm -f "$AWS_PS1_CACHE_FILE"
+}
+
+
+while [[ -n "$1" ]]; do
+  case "$1" in
+    --clear) aws_ps1_cache_clear && exit 0
+  esac
+  shift
+done
+
+[[ "${AWS_PS1:-on}" == "off" ]] && exit 0
+_clr_red="$(tput setaf 1 || echo "\e[31m")"
+_clr_green="$(tput setaf 2 || echo "\e[32m")"
+_clr_cyan="$(tput setaf 6 || echo "\e[36m")"
+_clr_magenta="$(tput setaf 5 || echo "\e[35m")"
+_clr_reset="$(tput sgr0 || echo "\e[0m")"
+
+[[ -d "$HOME/.aws" ]] && mkdir -p "$HOME/.aws"
+aws_ps1_cache_read
+  
+# check profile, if specified
+_profile="${AWS_PROFILE:-$AWS_DEFAULT_PROFILE}"
+  
+if [[ -n "$_profile" ]]; then
+  if [[ ! -r "$AWS_PS1_CACHE_FILE" \
+    || -z "$AWS_PS1_CACHE_PROFILE" \
+    || "$AWS_PS1_CACHE_PROFILE" != "$_profile" ]]
+  then
+    AWS_PS1_CACHE_SESSION="$(aws configure get "$_profile.aws_session_token")"
+    AWS_PS1_CACHE_EXPIRE="$(aws configure get "$_profile.aws_session_token_expire")"
+    AWS_PS1_CACHE_SRCP="$(aws configure get "$_profile.source_profile")"
+    AWS_PS1_CACHE_REGION="$(aws configure get "$_profile.region")"
+    AWS_PS1_CACHE_PROFILE="$_profile"
+
+    if [[ -z "$AWS_PS1_CACHE_EXPIRE" && -n "$AWS_PS1_CACHE_SRCP" ]]; then
+      AWS_PS1_CACHE_EXPIRE="$(aws configure get "$AWS_PS1_CACHE_SRCP.aws_session_token_expire")"
+    fi
+    if [[ -z "$AWS_PS1_CACHE_REGION" && -n "$AWS_PS1_CACHE_SRCP" ]]; then
+      AWS_PS1_CACHE_REGION="$(aws configure get "$AWS_PS1_CACHE_SRCP.region")"
+    fi
+
+    cat <<EOF >"$AWS_PS1_CACHE_FILE"
+export AWS_PS1_CACHE_PROFILE="$AWS_PS1_CACHE_PROFILE"
+export AWS_PS1_CACHE_REGION="$AWS_PS1_CACHE_REGION"
+export AWS_PS1_CACHE_SESSION="$AWS_PS1_CACHE_SESSION"
+export AWS_PS1_CACHE_EXPIRE="$AWS_PS1_CACHE_EXPIRE"
+export AWS_PS1_CACHE_SRCP="$AWS_PS1_CACHE_SRCP"
+EOF
+  fi
+
+  _ps1_key="$_profile"
+  [[ -n "$AWS_PS1_CACHE_SESSION" ]] && _ps1_sts="*"
+  _expire="$AWS_PS1_CACHE_EXPIRE"
+fi
+
+# check env variables, if specified
+[[ -n "$AWS_SESSION_TOKEN" ]] && _ps1_sts="*"
+[[ -n "$AWS_SESSION_TOKEN_EXPIRE" ]] && _expire="$AWS_SESSION_TOKEN_EXPIRE"
+[[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] && _ps1_key="keys"
+if [[ -n "$AWS_DEFAULT_REGION" ]]; then
+  _ps1_zone="$AWS_DEFAULT_REGION"
+elif [[ -z "$AWS_DEFAULT_REGION" && -n "$AWS_PS1_CACHE_REGION" ]]; then
+  _ps1_zone="$AWS_PS1_CACHE_REGION"
+fi
+[[ -n "$_ps1_zone" ]] && _ps1_sep1=":"
+
+if [[ -n "$_expire" ]]; then
+  case "$_expire" in
+    *Z)     _tmp_expire="${_expire/Z/+0000}" ;;
+    *00:00) _tmp_expire="${_expire/+00:00/+0000}" ;;
+  esac
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    _tmp_date="$(date -j -f '%Y-%m-%dT%H:%M:%S%z' "$_tmp_expire" +"%s" 2>/dev/null)"
+    t="$((_tmp_date - $(date -u +"%s")))"
+  else
+    _tmp_date="$(date -d "$_tmp_expire" +"%s" 2>/dev/null)"
+    t="$((_tmp_date - $(date -u +"%s")))"
+  fi
+  _ps1_ttl="0"
+  if [[ "$t" -gt 0 ]]; then
+    h=$((t/60/60%24))
+    m=$((t/60%60))
+    s=$((t%60))
+    _ps1_ttl="$h:$m:$s"
+  fi
+  [[ -n "$_ps1_ttl" ]] && _ps1_sep2=":"
+else
+  _ps1_ttl=""
+fi
+
+[[ -n "$_ps1_key" || -n "$_ps1_zone" ]] \
+  && echo "(${_clr_magenta}aws${_clr_reset}|${_clr_green}${_ps1_key}${_clr_reset}${_clr_red}${_ps1_sts}${_clr_reset}${_ps1_sep1}${_clr_cyan}${_ps1_zone}${_clr_reset}${_ps1_sep2}${_clr_red}${_ps1_ttl}${_clr_reset})"

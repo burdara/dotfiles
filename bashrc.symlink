@@ -2,46 +2,30 @@
 #
 # Bash run commands.
 
-[[ ! -d "$HOME/bin" ]] && mkdir -p "$HOME/bin"
-
-# Checks specified directoriess and adds them to PATH, if valid.
-# Globals:
-#   None.
-# Arguments:
-#   1: Optional -p|--prepend to add to front of PATH
-#   @: List of directory paths
-# Returns:
-#   None.
-add_paths() {
-  local loc p paths
-  while [[ -n "$1" ]]; do
-    case "$1" in
-      -p|--prepend) loc="pre" ;;
-      *) paths+="$1 "
-    esac
-    shift
-  done
-  for p in $paths; do
-    [[ ! -d "$p" ]] && continue
-    if [[ ! "$PATH" =~ [:]?${p}[:]? ]]; then 
-      [[ "$loc" == "pre" ]] && PATH="$p:$PATH" || PATH="$PATH:$p"
-      export PATH
-    fi
-  done
+# Sources bashrc.d files
+# Globals: None
+# Arguments: None
+# Returns: None
+_source_bashrcs() {
+  local alibs libs lib
+  if [[ -d "$HOME/.bashrc.d" ]]; then
+    libs=$(find -L "$HOME/.bashrc.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort | xargs)
+    IFS=' ' read -ra alibs <<< "$libs"
+    for lib in "${alibs[@]}"; do
+      # shellcheck source=/dev/null
+      [[ -r "$lib" ]] && source "$lib"
+    done
+  fi
 }
 
-# Default paths
-add_paths \
-  "$HOME/bin" \
-  "/usr/local/bin" \
-  "/usr/bin" \
-  "/bin" \
-  "/usr/local/sbin" \
-  "/usr/sbin" \
-  "/sbin" \
+# source common dotfiles
+[[ -r "$HOME/.shellrc" ]] && source "$HOME/.shellrc"
+# source bash dotfiles
+if [[ "${BASH_VERSION%%.*}" -ge 5 ]]; then
+  _source_bashrcs
+else
+  echo "BASH version 5 or higher is required!"
+fi
 
-# Default Aliases
-alias ls='ls -F'
-alias la='ls -AF'
-alias ll='ls -l'
-alias lla='ls -lA'
+# cleanup
+unset _source_bashrcs

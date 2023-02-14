@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+#
+# AWS MFA wrapper
+# Globals: None
+# Arguments:
+#   [options]: refer to usage
+# Returns:
+#   Depends on output options
+mydir="$(cd "$(dirname "$0")" && pwd)"
+me="$mydir/$(basename "$0")"
+readonly mydir me
+default_ttl_seconds="28800"
+default_output_type="profile"
+set_output="false"
+print_output="false"
+
+# Parses usage comments and outputs to stdout
+# Globals:
+#   me: this script path
+# Arguments: None
+# Returns:
+#   Scripts usage text to stdout
+print_usage() {
+  cat <<EOF
+usage: $(basename "$0") [options]
+options: $(echo ""; grep -E '#[ ]*help\(o\):[a-zA-Z\.\-\<\>\,\ ]+' "$me" \
+  | sed "s@#[ ]*help(o):@@g" | awk 'BEGIN {FS = "@"}; {printf "%-30s %s\n", $1, $2}')
+EOF
+}
+
+# Print error to stderr
+# Globals: None
+# Arguments:
+#   *: error message
+# Returns:
+#   Outputs error to stderr
+err() {
+  >&2 echo "[error] $*"
+}
+
+! command -v jq &>/dev/null \
+   && err "jq binary required; please install first" && exit 1
+
+aws_opts=()
+while [[ -n "$1" ]]; do
+  case "$1" in
+    # help(o): -c, --code @ Value/code provided by the MFA device
+    -c|--code) shift; mfa_code="$1" ;;
+    # help(o): -o, --output @ Output types: json, profile, env (default: profile)
+    -o|--output) shift; output_type="$1" ;;
+    # help(o): -p, --profile @ Profile name with default credentials
+    -p|--profile) shift; aws_opts+=("--profile" "$1") ;;
+    # help(o): -s, --serial @ The identification number of the MFA device that is associated with the IAM user
+    -s|--serial) shift; mfa_serial_number="$1" ;;
+    # help(o): -t, --ttl @ The duration, in seconds, that the credentials should remain valid (default: 28800)
+    -t|--ttl) shift; ttl_seconds="$1" ;;
+    # help(o): --set @ Sets environment variables (if type=env) or profile (if type=profile)
+    --set) set_output="true" ;;
+    # help(o): --print @ Whether to display commands executed
+    --print) print_output="true" ;;
+    # help(o): --to-profile @ Use specified name for for profile (if type=profile, default: sts-<username>)
+    --to-profile) shift; to_profile="$1" ;;
+    # help(o): -h, --help @
+    -h|--help) print_usage && exit 0 ;;
+  esac
+  shift
+done
+
+# If empty attempt discovery or prompt
+[[ -z "$mfa_serial_number" ]] \
+  && mfa_serial_number="$(aws "${aws_opts[@]}" iam list-mfa-devices | jq -r '.MFADevices[0].SerialNumber')" \
+  && echo "# MFA Serial: $mfa_serial_number"
+[[ -z "$mfa_code" ]] \
+  && read -r -p "# Enter MFA code: " mfa_code
+
+# Double check emptiness
+[[ -z "$mfa_serial_number" ]] \
+  && err "[error] mfa_serial_number not specified or empty." \
+  && exit 1
+[[ -z "$mfa_code" ]] \
+  && err "mfa_code not specified or empty." && exit 1
+
+# Retrieve session credentials
+session_creds_json="$(aws "${aws_opts[@]}" sts get-session-token \
+  --serial-number "$mfa_serial_number" \
+  --token-code "$mfa_code" \
+  --duration-seconds "${ttl_seconds:-$default_ttl_seconds}")" \
+    || { err "failed to get session token" && exit "$?" ;}
+
+aws_access_key_id="$(echo "$session_creds_json" | jq -r .Credentials.AccessKeyId)"
+aws_secret_access_key="$(echo "$session_creds_json" | jq -r .Credentials.SecretAccessKey)"
+aws_session_token="$(echo "$session_creds_json" | jq -r .Credentials.SessionToken)"
+aws_session_token_expire="$(echo "$session_creds_json" | jq -r .Credentials.Expiration)"
+commands=()
+case "${output_type:-$default_output_type}" in
+  profile)
+    mfa_name="${mfa_serial_number##*/}"
+    session_profile_name="${to_profile:-sts-${mfa_name}}"
+    commands+=(
+      "aws configure --profile \"$session_profile_name\" set aws_access_key_id \"$aws_access_key_id\""
+      "aws configure --profile \"$session_profile_name\" set aws_secret_access_key \"$aws_secret_access_key\""
+      "aws configure --profile \"$session_profile_name\" set aws_session_token \"$aws_session_token\""
+      "aws configure --profile \"$session_profile_name\" set aws_session_token_expire \"$aws_session_token_expire\""
+      "[[ -n \"$AWS_DEFAULT_PROFILE\" ]] && unset AWS_DEFAULT_PROFILE"
+      "export AWS_PROFILE=\"$session_profile_name\""
+    )
+    ;;
+  env)
+    commands+=(
+      "export AWS_ACCESS_KEY_ID=\"$aws_access_key_id\""
+      "export AWS_SECRET_ACCESS_KEY=\"$aws_secret_access_key\""
+      "export AWS_SESSION_TOKEN=\"$aws_session_token\""
+      "export AWS_SESSION_TOKEN_EXPIRE=\"$aws_session_token_expire\""
+      "[[ -n \"$AWS_DEFAULT_PROFILE\" ]] && unset AWS_DEFAULT_PROFILE"
+      "[[ -n \"$AWS_PROFILE\" ]] && unset AWS_PROFILE"
+    )
+    ;;
+  json) echo "$session_creds_json" ;;
+  *) err "invalid output type" && exit 1 ;;
+esac
+for cmd in "${commands[@]}"; do
+  [[ "$set_output" == "true" ]] && eval "$cmd"
+  [[ "$print_output" == "true" ]] && echo "$cmd"
+done
+[[ "$set_output" == "true" && -x "$mydir/aws-ps1" ]] && "$mydir"/aws-ps1 --clear

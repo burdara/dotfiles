@@ -1,0 +1,95 @@
+#!/usr/bin/env sh
+#
+# Common shell configurations
+
+# Checks specified directoriess and adds them to PATH, if valid.
+# Globals:
+#   PATH: Environment PATH variable
+# Arguments:
+#   Refer to usage
+# Returns:
+#   Sets new PATH environment variable
+add_paths() {
+  local paths=""
+  local action=1
+  local usage=$(cat <<EOF
+add_path [options] <path...>
+arguments:
+  path(s)        Path(s) to add
+options:
+  -a, --append   Append path (default)
+  -p, --prepend  Prepend path
+  -h, --help
+EOF
+)
+  while test -n "$1"; do
+    case "$1" in
+      -p|--prepend) action=1 ;;
+      -a|--append)  action=0 ;;
+      -h|--help)    echo "$usage" && return 0 ;;
+      *) test -n "$paths" && test -n "$1" && paths+=" "
+         test -n "$1" && paths+="$1"
+         ;;
+    esac
+    shift
+  done
+  local p
+  for p in $(echo $paths | xargs); do
+    ! test -d "$p" && continue
+    if ! echo "$PATH" | grep -e "[:]\?${p}[/:\$]\+" >/dev/null; then 
+      if [ "$action" -eq 1 ]; then 
+        PATH="$p:$PATH"
+      else
+        PATH="$PATH:$p"
+      fi
+      export PATH
+    fi
+  done
+}
+
+# Removes deplicate paths from PATH
+# Globals:
+#   PATH: Environment PATH variable
+# Arguments: None
+# Returns:
+#   Sets new PATH environment variable
+dedupe_path() {
+  local p
+  p="$(echo -n "$PATH" | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')"
+  PATH="$p"
+  export PATH
+}
+
+# Sources bashrc.d files
+# Globals: None
+# Arguments: None
+# Returns: None
+_source_shellrcs() {
+  local alibs libs lib
+  if [[ -d "$HOME/.shellrc.d" ]]; then
+    libs=$(find -L "$HOME/.shellrc.d" -maxdepth 1 -type f \( ! -iname ".*" \) | sort)
+    for lib in $(echo "$libs" | xargs); do
+      # shellcheck source=/dev/null
+      [[ -r "$lib" ]] && source "$lib"
+    done
+  fi
+}
+
+# Default paths
+add_paths \
+  "$HOME/bin" \
+  "/usr/local/bin" \
+  "/usr/bin" \
+  "/bin" \
+  "/usr/local/sbin" \
+  "/usr/sbin" \
+  "/sbin"
+
+# Aliases
+alias ls='ls -F'
+alias la='ls -AF'
+alias ll='ls -l'
+alias lla='ls -lA'
+
+# source shellrc.d files
+_source_shellrcs && unset _source_shellrcs

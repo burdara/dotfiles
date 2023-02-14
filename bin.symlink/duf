@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# Disk Usage by Folder
+# Globals: None
+# Arguments: None
+# Returns: None
+! command -v perl &>/dev/null && echo "error: perl binary not found" && exit 1
+perl_cmds=$(cat <<EOF
+(\$s, \$f)=split(m{\\t});
+for (qw(K M G)) {
+  if(\$s<1024) {
+    printf("%.1f",\$s);
+    print "\$_\\t\$f"; 
+    last
+  }
+  \$s=\$s/1024
+}
+EOF
+)
+du -sk ./* 2>/dev/null \
+  | sort -n \
+  | perl -ne "$perl_cmds"
