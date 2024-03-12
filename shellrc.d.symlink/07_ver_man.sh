@@ -11,7 +11,11 @@ command -v rbenv >/dev/null 2>&1 && eval "$(rbenv init -)"
 command -v nodenv >/dev/null 2>&1 && eval "$(nodenv init -)"
 
 # Python environment
-command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init --path)"
+export PYENV_ROOT="$HOME/.pyenv"
+if command -v pyenv >/dev/null 2>&1; then 
+  add_paths --prepend "$PYENV_ROOT/bin"
+  eval "$(pyenv init -)"
+fi
 
 # java versions
 ! test -d "$HOME/.jenv/bin" && mkdir -p "$HOME/.jenv/bin"

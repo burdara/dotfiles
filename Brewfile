@@ -1,7 +1,7 @@
 ## Make sure xcode is installed first
 ## xcode-select --install
 tap "homebrew/cask-versions"
-tap "homebrew/cask"
+# tap "homebrew/cask"
 
 ## aws
 tap "aws/tap"
@@ -78,6 +78,7 @@ brew "pipenv"
 brew "pyenv"
 brew "rbenv"
 brew "rustup-init"
+brew "temurin"
 ## multiplexer
 brew "screen"
 brew "tmux"
@@ -109,6 +110,9 @@ cask "1password-cli"
 cask "1password"
 ## aws
 cask "session-manager-plugin"
+## azure
+cask "azure-data-studio"
+cask "microsoft-azure-storage-explorer"
 ## browsers
 cask "firefox"
 # cask "google-chrome" ## ALREADY INSTALLED; UNCOMMENT OTHERWISE
@@ -133,16 +137,16 @@ cask "google-cloud-sdk"
 tap "chef/chef"
 cask "inspec"
 ## java
-tap "adoptopenjdk/openjdk"
+#tap "adoptopenjdk/openjdk"
 #cask "adoptopenjdk8"
 #cask "adoptopenjdk9"
 #cask "adoptopenjdk10"
-cask "adoptopenjdk11"
+#cask "adoptopenjdk11"
 #cask "adoptopenjdk12"
 #cask "adoptopenjdk13"
 #cask "adoptopenjdk14"
 #cask "adoptopenjdk15"
-cask "adoptopenjdk16"
+#cask "adoptopenjdk16"
 ## music
 cask "spotify"
 ## networking
