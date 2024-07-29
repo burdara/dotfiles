@@ -7,6 +7,7 @@
 !aws-ps1
 !aws-ssm
 !awsph
+!divvy-config
 !dnsflush
 !duf
 !show-cert
