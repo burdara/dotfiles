@@ -18,6 +18,9 @@ if [ "$(uname)" = "Darwin" ]; then
       && mkdir -p "$_base_dir/Scripts/AutoLaunch"
     test -e "$_src" && cp -p "$_src" "$_dst"
   fi
+
+  # setup brew environment
+  test -e "/opt/homebrew/bin/brew" && eval "$(/opt/homebrew/bin/brew shellenv)"
   
   # custom paths
   # helm resources require latest gnu-getopt

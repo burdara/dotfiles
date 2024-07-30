@@ -8,7 +8,7 @@ _git_config="$HOME/.config/git/config.local"
 for attr in user.name user.email; do
   if test -z "$(git config --file "$_git_config" "$attr")"; then
     printf "Enter Git %s: " "$attr" >&2
-    read -r input \
+    read -r input
     git config --file "$_git_config" "$attr" "$input"
   fi
 done

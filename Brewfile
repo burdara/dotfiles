@@ -103,7 +103,6 @@ brew "shellcheck"                        # Static analysis and lint tool, for (b
 # cask "slack"                             # Team communication and collaboration software
 brew "sops"                              # Editor of encrypted files
 cask "spotify"                           # Music streaming service
-brew "sslyze"                            # SSL scanner
 brew "stern"                             # Tail multiple Kubernetes pods & their containers
 brew "tcl-tk"                            # Tool Command Language
 brew "tcpdump"                           # Command-line packet analyzer
@@ -118,7 +117,7 @@ brew "trivy"                             # Vulnerability scanner for container i
 brew "tsqllint/tsqllint/tsqllint"        # Configurable linting for TSQL
 brew "unbound"                           # Validating, recursive, caching DNS resolver
 brew "loft-sh/tap/vcluster-experimental" # Creates fully functional virtual k8s cluster inside host k8s cluster's namespace
-cask "virtualbox"                        # Virtualiser for x86 hardware
+cask "virtualbox@beta"                   # Virtualiser for x86 hardware
 brew "virtualenv"                        # Tool for creating isolated virtual python environments
 cask "visual-studio"                     # Integrated development environment
 cask "visual-studio-code"                # Open-source code editor
