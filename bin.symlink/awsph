@@ -50,7 +50,7 @@ current_profile() {
     echo "$cur_prfl_env"
   elif [[ -n "$cur_prfl_file" ]]; then
     echo "$cur_prfl_file"
-  elif [[ "$1" != "--no-fail" ]]; then
+  elif [[ "${1:-}" != "--no-fail" ]]; then
     rc=1
   fi
   return "${rc:-0}"
@@ -63,7 +63,7 @@ get_profiles() {
 list_profiles() {
   set -u pipefail
   local cur prfl_list
-  cur="$(current_profile)" || exit_err "error getting current profile"
+  cur="$(current_profile --no-fail)" || exit_err "error getting current profile"
   prfl_list=$(get_profiles) || exit_err "error getting profile list"
 
   local yellow darkbg normal
@@ -133,7 +133,7 @@ choose_profile_interactive() {
 
 set_profile() {
   local prev
-  prev="$(current_profile)" || exit_err "error getting current profile"
+  prev="$(current_profile --no-fail)" || exit_err "error getting current profile"
   save_profile_cur "$1"
   if [[ "$prev" != "$1" ]]; then
     save_profile_pre "$prev"

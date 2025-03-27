@@ -9,8 +9,8 @@ readonly MYDIR
 [[ -n "$NOOP" ]] && NOOP="echo [noop]:"
 
 # Download checksums
-VIM_PLUG_MD5="6bcc7229d5f788753b0bead08908546e"
-OH_MY_ZSH_INSTALL_MD5="ecbbd58a4831a9f1d8e75a31b1e32545"
+VIM_PLUG_MD5="14b711fdda4f4dcb97370908890b9d77"
+OH_MY_ZSH_INSTALL_MD5="37c19e2522a49c190c5c04ff1882e416"
 
 
 # Backups, if exists, and creates symbolic link of file.
@@ -35,6 +35,7 @@ _link_file() {
 _common_install() {
   # install vim-plug
   if [[ ! -e "$HOME/.vim/autoload/plug.vim" ]]; then
+    [[ ! -d "$HOME/.vim/autoload" ]] && mkdir -p "$HOME/.vim/autoload"
     curl -sfLo "/tmp/vim-plug/plug.vim" --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     if [[ "$VIM_PLUG_MD5" == "$(md5 -q /tmp/vim-plug/plug.vim)" ]]; then
@@ -44,11 +45,12 @@ _common_install() {
     fi
   fi
 
+  [[ ! -d "$HOME/.config" ]] && mkdir "$HOME/.config"
   _link_file "$HOME/bin" "$MYDIR/bin.symlink"
   _link_file "$HOME/.shellrc" "$MYDIR/shellrc.symlink"
   _link_file "$HOME/.shellrc.d" "$MYDIR/shellrc.d.symlink"
   _link_file "$HOME/.config/git" "$MYDIR/config/git.symlink"
-  _link_file "$HOME/.vimrc.bundles" "$MYDIR/vimrc.bundles.symlink"
+  _link_file "$HOME/.vimrc.bundles" "$MYDIR/vimrc.bundles.symlink"cd 
   _link_file "$HOME/.vimrc" "$MYDIR/vimrc.symlink"
 
   # create initial git config, if not present

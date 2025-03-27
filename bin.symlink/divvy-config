@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# ref: https://mizage.com/help/divvy/export_import.html
+
+mydir="$(cd "$(dirname "$0")" && pwd)"
+config_dir="$mydir/../config/divvy"
+plist_xmlfile="$config_dir/divvy.plist.xml"
+plist_tmpfile="$config_dir/.tmp.divvy.plist"
+
+trigger_import() {
+  cp "$plist_xmlfile" "$plist_tmpfile"
+  plutil -convert binary1 "$plist_tmpfile"
+  open "divvy://import/$(base64 < "$plist_tmpfile")"
+  [[ -e "$plist_tmpfile" ]] && rm -f "$plist_tmpfile"
+}
+
+trigger_export() {
+  open "divvy://export"
+}
+
+case "$1" in
+  import) trigger_import ;;
+  export) trigger_export ;;
+  *)      echo "usage: divvy-config import|export" ;;
+esac

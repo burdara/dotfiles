@@ -27,6 +27,9 @@ while IFS= read -r jhome; do
 done < /tmp/jvm
 rm -f /tmp/jvm
 
+# golang version - gvm
+test -s "$HOME/.gvm/scripts/gvm" && source "$HOME/.gvm/scripts/gvm"
+
 # Version manager init processes don't manage paths well
 # Just in case this runs several times, we will remove deplicates from PATH
 dedupe_path

@@ -30,3 +30,8 @@ source "$ZSH/oh-my-zsh.sh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# added by Snowflake SnowSQL installer v1.2
+export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH
+
+[[ -s "/Users/robbieburda/.gvm/scripts/gvm" ]] && source "/Users/robbieburda/.gvm/scripts/gvm"
