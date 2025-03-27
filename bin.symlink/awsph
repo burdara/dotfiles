@@ -133,7 +133,7 @@ choose_profile_interactive() {
 
 set_profile() {
   local prev
-  prev="$(current_profile)" || exit_err "error getting current profile"
+  prev="$(current_profile --no-fail)" || exit_err "error getting current profile"
   save_profile_cur "$1"
   if [[ "$prev" != "$1" ]]; then
     save_profile_pre "$prev"
