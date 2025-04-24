@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# 
+# k9s wrapper script
+# Globals: None
+# Arguments:
+#   @: Options and commands. Refer to usage.
+# Returns:
+#   Sets k9s config file and runs k9s with the given arguments.
+
+! command -v k9s &>/dev/null && echo "[error] k9s binary not found" && rc=1
+! command -v yq &>/dev/null && echo "[error] yq binary not found" && rc=1
+[[ ! -d "$HOME/Library/Application Support/k9s" ]] && echo "[error] k9s config directory not found" && rc=1
+[[ "${rc:-0}" -ne 0 ]] && exit "$rc"
+
+k9s_target_config_file="$HOME/Library/Application Support/k9s/config.yaml"
+k9s_skin_dir="$HOME/Library/Application Support/k9s/skins"
+k9s_skin_list=(
+  "axual"
+  "black-and-wtf"
+  "dracula"
+  "everforest-dark"
+  "everforest-light"
+  "gruvbox-dark-hard"
+  "gruvbox-dark"
+  "gruvbox-light-hard"
+  "gruvbox-light"
+  "in-the-navy"
+  "kanagawa"
+  "kiss"
+  "monokai"
+  "narsingh"
+  "nightfox"
+  "nord"
+  "one-dark"
+  "red"
+  "rose-pine-dawn"
+  "rose-pine-moon"
+  "rose-pine"
+  "snazzy"
+  "solarized-16"
+  "solarized-dark"
+  "solarized-light"
+  "stock"
+  "transparent"
+)
+
+install_k9s_skins() {
+  local k9s_skin_git_url="https://raw.githubusercontent.com/k9s-io/k9s/master/skins"
+  
+  for k9s_skin in "${k9s_skin_list[@]}"; do
+    [[ ! -e "$k9s_skin_dir/$k9s_skin.yaml" ]] \
+      && curl -sl -o "$k9s_skin_dir/$k9s_skin.yaml" "$k9s_skin_git_url/$k9s_skin.yaml"
+  done
+}
+
+k9s_skin=""
+k9s_args=()
+while [[ -n "$1" ]]; do
+  case "$1" in
+    -d|--dark)
+      k9s_skin="gruvbox-dark"
+      ;;
+    -l|--light)
+      k9s_skin="solarized-light"
+      ;;
+    -s|--skin)
+      k9s_skin="$2"
+      shift
+      ;;
+    --refresh-skins)
+      install_k9s_skins
+      ;;
+    *) k9s_args+=("$1")
+      ;;
+  esac
+  shift
+done
+
+if [[ ! -d "$k9s_skin_dir" ]]; then
+  mkdir -p "$k9s_skin_dir"
+  install_k9s_skins
+fi
+
+if [[ -n "$k9s_skin" ]]; then
+  k9s_skin_file="$k9s_skin_dir/$k9s_skin.yaml"
+  [[ -e "$k9s_skin_file" ]] \
+    && yq eval ".k9s.ui.skin = \"$k9s_skin\"" -i "$k9s_target_config_file"
+fi
+
+k9s "${k9s_args[@]}"
