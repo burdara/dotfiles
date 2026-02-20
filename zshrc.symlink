@@ -22,14 +22,20 @@ plugins=(
 [[ "$(uname -s)" == "Darwin" ]] \
   && plugins+=("macos")
 
-ZSH_THEME="powerlevel10k/powerlevel10k"
+if [[ -n $CURSOR_TRACE_ID ]]; then
+  ZSH_THEME="robbyrussell"  # Use a simpler theme in Cursor
+else
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+fi
 
 source "$ZSH/oh-my-zsh.sh"
 # source common dotfiles
 [[ -r "$HOME/.shellrc" ]] && source "$HOME/.shellrc"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+if [[ ! -n $CURSOR_TRACE_ID ]]; then
+  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+fi
 
 # added by Snowflake SnowSQL installer v1.2
 export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH

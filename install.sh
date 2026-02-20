@@ -9,8 +9,8 @@ readonly MYDIR
 [[ -n "$NOOP" ]] && NOOP="echo [noop]:"
 
 # Download checksums
-VIM_PLUG_MD5="14b711fdda4f4dcb97370908890b9d77"
-OH_MY_ZSH_INSTALL_MD5="37c19e2522a49c190c5c04ff1882e416"
+VIM_PLUG_MD5="add24af94ea43790daacbc6e2bdcadfb"
+OH_MY_ZSH_INSTALL_MD5="01ae1ee6c9b00bb05dad99fc85511ecd"
 
 
 # Backups, if exists, and creates symbolic link of file.
@@ -85,7 +85,7 @@ _bash_install() {
 _zsh_install() {
   # install oh-my-zsh
   if [[ ! -e "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]]; then
-    curl -sfLo "/tmp/oh-my-zsh/install.sh" --create-dir \
+    curl -sfLo "/tmp/oh-my-zsh/install.sh" --create-dirs \
       https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
     if [[ "$OH_MY_ZSH_INSTALL_MD5" == "$(md5 -q /tmp/oh-my-zsh/install.sh)" ]]; then
       chmod +x "/tmp/oh-my-zsh/install.sh"
@@ -103,7 +103,7 @@ _zsh_install() {
     MesloLGS_NF_Italic.ttf \
     MesloLGS_NF_Bold_Italic.ttf
   do
-    curl -sfLo "$HOME/.fonts/$ttf" --create-dir \
+    curl -sfLo "$HOME/.fonts/$ttf" --create-dirs \
       "https://github.com/romkatv/powerlevel10k-media/raw/master/${ttf//_/%20}"
     [[ "$(uname)" == "Darwin" ]] \
       && $NOOP cp "$HOME/.fonts/$ttf" /Library/Fonts/

@@ -13,3 +13,4 @@ export LSCOLORS=gxfxcxdxbxegedabagacad
 # cleanup
 unset _source_bash_profiles
 echo "Done. Happy coding!"
+. "$HOME/.cargo/env"

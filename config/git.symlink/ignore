@@ -36,3 +36,9 @@ Thumbs.db
 
 ### My Temp files
 .tmp*
+
+### Robot mafia
+.robot_mafia
+
+
+**/.claude/settings.local.json

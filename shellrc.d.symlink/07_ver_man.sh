@@ -10,6 +10,14 @@ command -v rbenv >/dev/null 2>&1 && eval "$(rbenv init -)"
 # Node environment
 command -v nodenv >/dev/null 2>&1 && eval "$(nodenv init -)"
 
+# rust environment
+# run: rustup-init on fresh install
+test -s "$HOME/.cargo/env" && source "$HOME/.cargo/env"
+test -d "$HOME/.cargo/bin" && add_paths "$HOME/.cargo/bin"
+if command -v "rustup" >/dev/null 2>&1; then
+  ! test -d "$HOME/.zfunc/_rustup" && rustup completions zsh > ~/.zfunc/_rustup
+fi
+
 # Python environment
 export PYENV_ROOT="$HOME/.pyenv"
 if command -v pyenv >/dev/null 2>&1; then 
